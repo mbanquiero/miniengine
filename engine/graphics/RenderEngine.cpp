@@ -44,7 +44,7 @@ void CRenderEngine::Create(HWND hwnd)
 void  CRenderEngine::InitD3D(HWND hWnd)
 {
 	// Inicializa el DirectX
-	HRESULT hr;
+	//HRESULT hr;
 	// Create the D3D object.
 	if( ( g_pD3D = Direct3DCreate9( D3D_SDK_VERSION ) ) == NULL)
 	{
@@ -426,15 +426,15 @@ void CRenderEngine::SetShaderTransform()
 	g_pEffect->SetMatrix( "m_TransposeInvWorld", &m_TransposeInvWorld);
 
 	// Resolucion de pantalla
-	g_pEffect->SetFloat("screen_dx", d3dpp.BackBufferWidth);      
-	g_pEffect->SetFloat("screen_dy", d3dpp.BackBufferHeight);      
+	g_pEffect->SetFloat("screen_dx", (float)d3dpp.BackBufferWidth);      
+	g_pEffect->SetFloat("screen_dy", (float)d3dpp.BackBufferHeight);      
 
 }
 
 void CRenderEngine::SetShaderLighting()
 {
 	float phi = 2;
-	float theta = 0.95;
+	float theta = 0.95f;
 
 	D3DXVECTOR3 vLightPos = D3DXVECTOR3(0,2500,0);
 	D3DXVECTOR3 vLightDir = D3DXVECTOR3(0,-1,0);
@@ -443,8 +443,8 @@ void CRenderEngine::SetShaderLighting()
 	g_pEffect->SetValue( "g_LightDir", vLightDir, sizeof(D3DXVECTOR3));
 	g_pEffect->SetValue( "g_LightPos", vLightPos, sizeof(D3DXVECTOR3));
 	g_pEffect->SetValue( "g_LightColor", vLightColor, sizeof(D3DXVECTOR3));
-	g_pEffect->SetFloat( "g_LightPhi", cos(phi/2.0));
-	g_pEffect->SetFloat( "g_LightTheta", cos(theta/2.0));
+	g_pEffect->SetFloat( "g_LightPhi", (float)cos(phi/2.0));
+	g_pEffect->SetFloat( "g_LightTheta", (float)cos(theta/2.0));
 
 	//	g_pEffect->SetFloat( "k_la", shader_la);	// luz ambiente
 	//	g_pEffect->SetFloat( "k_ld", shader_ld);	// luz difusa

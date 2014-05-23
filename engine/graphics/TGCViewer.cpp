@@ -152,7 +152,7 @@ char CTGCMeshParser::ParseXMLLine(char *buffer)
 	if(strncmp(buffer,"<opacity>" , 9)==0)
 	{
 		if(xml_current_tag==0 && xml_current_layer>=0 && xml_current_layer<M->cant_layers)
-			M->layers[xml_current_layer].kt = atof(buffer + 10);
+			M->layers[xml_current_layer].kt = (float)atof(buffer + 10);
 		procesada = 1;
 	}
 
@@ -361,7 +361,7 @@ void CTGCMeshParser::CreateMeshData()
 	else
 	{
 		// tiene multimateriales, lo cargo desde los matids
-		for(int i=0;i<M->cant_faces;++i)
+		for(DWORD i=0;i<M->cant_faces;++i)
 			pAttributes[i] = matIds[i];
 	}
 
@@ -435,7 +435,7 @@ D3DCOLORVALUE CTGCXmlParser::ParseXMLColor(char *buffer)
 		else
 		{
 			saux[t] = '\0';
-			val[f] = atof(saux);
+			val[f] = (float)atof(saux);
 			++i;
 		}
 	}
@@ -471,7 +471,7 @@ D3DXVECTOR3 CTGCXmlParser::ParseXMLVector3(char *buffer)
 		else
 		{
 			saux[t] = '\0';
-			val[f] = atof(saux);
+			val[f] = (float)atof(saux);
 			++i;
 		}
 	}
@@ -505,7 +505,7 @@ D3DXVECTOR4 CTGCXmlParser::ParseXMLVector4(char *buffer)
 		else
 		{
 			saux[t] = '\0';
-			val[f] = atof(saux);
+			val[f] = (float)atof(saux);
 			++i;
 		}
 	}
@@ -562,7 +562,7 @@ bool CTGCXmlParser::ParseFloatStream(char *buffer,float *S,int count)
 		else
 		{
 			saux[t] = '\0';
-			S[c++] = atof(saux);
+			S[c++] = (float)atof(saux);
 			++i;
 		}
 	}
@@ -789,11 +789,11 @@ char CTGCSkeletalMeshParser::ParseXMLLine(char *buffer)
 			CTGCXmlParser::ParseFloatStream(p+1,valores,count);
 			for(int i=0;i<cant_weights;++i)
 			{
-				int vertex_index = valores[i*3];
+				int vertex_index = (int)valores[i*3];
 				int j = wxv[vertex_index]++;
 				if(j>=0 && j<4)
 				{
-					aux_verticesWeights[vertex_index].boneIndex[j]  = valores[i*3+1];
+					aux_verticesWeights[vertex_index].boneIndex[j]  = (int)valores[i*3+1];
 					aux_verticesWeights[vertex_index].weight[j] = valores[i*3+2];
 				}
 			}
@@ -815,7 +815,7 @@ void CTGCSkeletalMeshParser::CreateMeshData()
 	int cant_vertices = p_mesh->cant_vertices;
 	SKELETAL_MESH_VERTEX *pVertices = p_mesh->pVertices = new SKELETAL_MESH_VERTEX[cant_vertices];
 	p_mesh->verticesWeights = new vertexWeight[p_mesh->cant_vertices];
-	for(int i=0;i<p_mesh->cant_vertices;++i)
+	for(DWORD i=0; i < p_mesh->cant_vertices; ++i)
 	{
 		int index = coordinatesIdx[i] * 3;
 		pVertices[i].position.x = vertices[index];
@@ -836,10 +836,10 @@ void CTGCSkeletalMeshParser::CreateMeshData()
 		pVertices[i].tangent.z = tangents[index + 2];
 
 		index = coordinatesIdx[i];
-		pVertices[i].blendIndices.x = aux_verticesWeights[index].boneIndex[0];
-		pVertices[i].blendIndices.y = aux_verticesWeights[index].boneIndex[1];
-		pVertices[i].blendIndices.z = aux_verticesWeights[index].boneIndex[2];
-		pVertices[i].blendIndices.w = aux_verticesWeights[index].boneIndex[3];
+		pVertices[i].blendIndices.x = (float)aux_verticesWeights[index].boneIndex[0];
+		pVertices[i].blendIndices.y = (float)aux_verticesWeights[index].boneIndex[1];
+		pVertices[i].blendIndices.z = (float)aux_verticesWeights[index].boneIndex[2];
+		pVertices[i].blendIndices.w = (float)aux_verticesWeights[index].boneIndex[3];
 
 		pVertices[i].blendWeights.x = aux_verticesWeights[index].weight[0];
 		pVertices[i].blendWeights.y = aux_verticesWeights[index].weight[1];
@@ -871,7 +871,7 @@ void CTGCSkeletalMeshParser::CreateMeshData()
 	else
 	{
 		// tiene multimateriales, lo cargo desde los matids
-		for(int i=0;i<M->cant_faces;++i)
+		for(DWORD i=0;i<M->cant_faces;++i)
 			pAttributes[i] = matIds[i];
 	}
 }

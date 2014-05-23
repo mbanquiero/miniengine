@@ -356,14 +356,14 @@ void CSkeletalMesh::updateSkeleton()
 		float currentFrameF = currentTime * frameRate;
 		//Ve a que KeyFrame le corresponde
 		int keyFrameIdx = getCurrentFrameBone(&boneFrames, currentFrameF);
-		currentFrame = keyFrameIdx;
+		currentFrame = (float)keyFrameIdx;
 
 		//Armar un intervalo entre el proximo KeyFrame y el anterior
 		st_bone_frame *p_frame1 = &boneFrames.frame[keyFrameIdx - 1];
 		st_bone_frame *p_frame2 = &boneFrames.frame[keyFrameIdx];
 
 		//Calcular la cantidad que hay interpolar en base al la diferencia entre cuadros
-		float framesDiff = p_frame2->nro_frame - p_frame1->nro_frame;
+		float framesDiff = (float)(p_frame2->nro_frame - p_frame1->nro_frame);
 		float interpolationValue = (currentFrameF - p_frame1->nro_frame) / framesDiff;
 
 		//Interpolar traslacion
@@ -499,7 +499,7 @@ bool CSkeletalMesh::CreateMeshFromData(CRenderEngine *p_engine)
 	{
 		// Estoy trabajando con el layer i, busco en la tabla de atributos las caras que pertencen al layer i
 		layers[i].start_index = index;
-		for(int j=0;j<cant_faces;++j)
+		for(DWORD j=0;j<cant_faces;++j)
 			if(pAttributes[j]==i)
 			{
 				// Agrego esta cara al subset

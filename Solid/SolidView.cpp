@@ -211,8 +211,8 @@ void CSolidView::RenderLoop()
 		QueryPerformanceCounter(&T1);
 		double elapsed_time = (double)(T1.QuadPart - T0.QuadPart) / (double)F.QuadPart;
 		T0 = T1;
-		time += elapsed_time;
-		escena.Update(elapsed_time);
+		time += (float)elapsed_time;
+		escena.Update((float)elapsed_time);
 		if(p_robot)
 			p_robot->updateAnimation();
 		escena.RenderFrame(RenderScene);
@@ -304,7 +304,7 @@ void CSolidView::OnMouseMove(UINT nFlags, CPoint point)
 				// uso el desplazamiento vertical, par elevar o bajar el punto de vista
 				//escena.LF.z += 2*dy/ey;
 				// uso el desplazamiento en x para rotar el punto de vista  en el plano xy
-				rotar_xz(&escena.lookFrom , an);
+				rotar_xz(&escena.lookFrom , (float)an);
 				escena.lookFrom.y += 2*dy*mxp;
 			}
 			break;
@@ -350,7 +350,7 @@ BOOL CSolidView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	D3DXVECTOR3 v = escena.lookFrom -escena.lookAt;
 	v.y = 0;
 	D3DXVec3Normalize(&v,&v);
-	escena.lookFrom -=   v*(zDelta/120.0 * dist * 0.1f);
+	escena.lookFrom -= v*((float)(zDelta / 120.0 * dist * 0.1f));
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }
 

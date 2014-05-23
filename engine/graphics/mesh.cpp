@@ -120,7 +120,7 @@ bool CMesh::LoadDataFromFile(char *filename)
 	fread(&g_dwNumMaterials,sizeof(g_dwNumMaterials),1,fp);
 	cant_layers = g_dwNumMaterials;
 
-	for(int i=0;i<g_dwNumMaterials;++i)
+	for(DWORD i=0;i<g_dwNumMaterials;++i)
 	{
 		// nombre de la textura
 		char texture_name[256];
@@ -160,7 +160,7 @@ bool CMesh::LoadDataFromFile(char *filename)
 	pVertices = new MESH_VERTEX[cant_vertices];
 	fread(pVertices,bpv,cant_vertices,fp);
 	// Transformo de lepton format a dx format
-	for(int i=0;i<cant_vertices;++i)
+	for(DWORD i=0;i<cant_vertices;++i)
 	{
 		float x = pVertices[i].position.x;
 		float y = pVertices[i].position.y;
@@ -200,7 +200,7 @@ bool CMesh::ComputeBoundingBox()
 
 	D3DXVECTOR3 min = D3DXVECTOR3 (10000,10000,10000);
 	D3DXVECTOR3 max = D3DXVECTOR3 (-10000,-10000,-10000);
-	for(int i=0;i<cant_vertices;++i)
+	for(DWORD i=0;i<cant_vertices;++i)
 	{
 		D3DXVECTOR3 pos = pos_vertice(i);
 		if(pos.x<min.x)
@@ -306,7 +306,7 @@ bool CMesh::CreateMeshFromData(CRenderEngine *p_engine)
 	{
 		// Estoy trabajando con el layer i, busco en la tabla de atributos las caras que pertencen al layer i
 		layers[i].start_index = index;
-		for(int j=0;j<cant_faces;++j)
+		for(DWORD j=0;j<cant_faces;++j)
 			if(pAttributes[j]==i)
 			{
 				// Agrego esta cara al subset
@@ -492,7 +492,7 @@ void CMesh::CreateGrid(D3DXVECTOR3 pos,float dx,float dz,int c,int f,char *textu
 	layers[0].Diffuse.r = layers[0].Ambient.r = 1;
 	layers[0].Diffuse.g = layers[0].Ambient.g = 1;
 	layers[0].Diffuse.b = layers[0].Ambient.b = 1;
-	layers[0].ke = 0.4;
+	layers[0].ke = 0.4f;
 	layers[0].kt = 0;
 	layers[0].kr = 0;
 	cant_layers = 1;

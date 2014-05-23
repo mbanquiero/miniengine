@@ -1,6 +1,5 @@
 #pragma once
-#include "d3dx9.h"
-#include "d3dx10Math.h"
+
 #include "mesh.h"
 #include "texture.h"
 
