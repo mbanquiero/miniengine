@@ -1,5 +1,7 @@
 #pragma once
 
+#define DEFERRED_RENDER
+
 #include "mesh.h"
 #include "texture.h"
 
@@ -16,6 +18,13 @@ struct VERTEX
 	D3DXVECTOR2 texcoord;
 };
 
+// Vertex format para Quads
+struct QUADVERTEX
+{
+	D3DXVECTOR4 pos;	// Posicion
+	FLOAT tu,tv;		// Texture coords
+};
+#define D3DFVF_QUADVERTEX  (D3DFVF_XYZRHW | D3DFVF_TEX1)
 
 class CRenderEngine
 {
@@ -34,6 +43,7 @@ public:
 	D3DPRESENT_PARAMETERS	d3dpp;
 	LPD3DXFONT				g_pFont;
 	LPD3DXSPRITE			g_pSprite;		
+	D3DCAPS9				Caps;
 
 	ID3DXEffect* g_pEffect;				// current Effect
 	ID3DXEffect* g_pEffectStandard;	
@@ -41,6 +51,22 @@ public:
 	LPDIRECT3DVERTEXDECLARATION9 m_pVertexDeclaration;			// Pos + Normal + TexCoords
 	LPDIRECT3DVERTEXDECLARATION9 m_pSkeletalMeshVertexDeclaration;
 	LPDIRECT3DVERTEXDECLARATION9 m_pSpriteVertexDeclaration;	// Pos + TexCoords
+
+	// Geometry buffer
+	LPDIRECT3DTEXTURE9          g_pPositionTexture;
+	LPDIRECT3DSURFACE9          g_pPositionSurf;
+	LPDIRECT3DTEXTURE9          g_pColorTexture;
+	LPDIRECT3DSURFACE9          g_pColorSurf;
+	LPDIRECT3DTEXTURE9          g_pNormalTexture;
+	LPDIRECT3DSURFACE9          g_pNormalSurf;
+	LPDIRECT3DSURFACE9			g_pDepthBuffer;			// Zbuffer sin multisample
+
+	// FullScreenCuad
+	LPDIRECT3DTEXTURE9          g_pFullScreenRenderTarget;
+	LPDIRECT3DSURFACE9          g_pFullScreenRenderTargetSurf;
+
+	QUADVERTEX  g_FullScreenQuad[4];
+
 
 	// Camera support
 	D3DXVECTOR3 lookFrom , lookAt;
@@ -71,9 +97,13 @@ public:
 	bool IsReady();
 	void Release();			// closes Direct3D and releases memory
 
-
+	// Graphic pipeline
 	void Update(float p_elpased_time);
 	void RenderFrame(void (*lpfnRender)()=NULL);
+	void RenderGBuffer(void (*lpfnRender)()=NULL);
+	void RenderLigthPass();
+	void RenderFullScreenQuad();
+
 	int LoadTexture(char *filename);
 	void ReleaseTextures();
 	int LoadMesh(char *filename);
@@ -98,7 +128,7 @@ public:
 	// Text
 	virtual void TextOut(int x,int y,char *string);
 
-
+	void SetupFullscreenQuad();
 
 private:
 	virtual CMesh *LoadMeshFromFile(char *fname);

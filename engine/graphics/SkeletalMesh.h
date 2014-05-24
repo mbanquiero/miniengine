@@ -129,7 +129,6 @@ public:
 	virtual bool hay_internal_data() { return pVertices!=NULL ? true : false;};
 
 	virtual void SetVertexDeclaration();
-	virtual void SetShaders();
 	virtual void Draw();
 	virtual void DrawSubset(int i);
 

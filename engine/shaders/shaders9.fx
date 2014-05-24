@@ -32,6 +32,19 @@ sampler_state
 	AddressV = MIRROR;
 };
 
+texture  g_txColorBuffer;
+sampler2D g_ColorBuffer =
+sampler_state
+{
+	Texture = <g_txColorBuffer>;
+	MinFilter = Point;
+	MagFilter = Point;
+	MipFilter = Point;
+	AddressU = Clamp;
+	AddressV = Clamp;
+};
+
+
 struct VS_OUTPUT
 {
     float4 position : POSITION;
@@ -95,12 +108,38 @@ float4 RenderScenePS(VS_OUTPUT Input) : COLOR0
 }
 
 
+struct G_BUFFER
+{
+	float4 color : COLOR0;
+	float4 position : COLOR1;
+	float4 normal : COLOR2;
+};
+
+G_BUFFER RenderGBufferPS(VS_OUTPUT Input)
+{
+	G_BUFFER Output;
+    Output.color = tex2D(TextureSampler,Input.texCoords);
+    Output.position = float4(Input.wpos,1);
+    Output.normal = float4(Input.normal,1);
+	return Output;
+}
+
 technique RenderScene
 {
     pass P0
     {          
         VertexShader = compile vs_3_0 RenderSceneVS();
         PixelShader  = compile ps_3_0 RenderScenePS(); 
+    }
+}
+
+
+technique RenderGBuffer
+{
+    pass P0
+    {          
+        VertexShader = compile vs_3_0 RenderSceneVS();
+        PixelShader  = compile ps_3_0 RenderGBufferPS(); 
     }
 }
 
@@ -212,6 +251,21 @@ float4 SkeletalPShader(VS_SKIN_OUTPUT Input) : COLOR0
 	return float4(color,1);
 }
 
+
+// Dibuja el g-buffer de un skeletal mesh
+G_BUFFER SkeletalGBufferPS(VS_SKIN_OUTPUT Input)
+{
+
+	G_BUFFER Output;
+    Output.color = tex2D(TextureSampler,Input.texCoords);
+	Output.normal = float4(normalize(Input.normal),1);
+	Output.position = float4(Input.wpos,1);
+	//float3 Tg = normalize(Input.tangent);
+	//float3 Bn = normalize(Input.binormal);
+	return Output;
+}
+
+
 technique SkeletalRender
 {
     pass P0
@@ -221,6 +275,15 @@ technique SkeletalRender
     }
 }
 
+
+technique SkeletalRenderGBuffer
+{
+    pass P0
+    {          
+        VertexShader = compile vs_3_0 SkeletalVShader();
+        PixelShader  = compile ps_3_0 SkeletalGBufferPS(); 
+    }
+}
 
 
 // -----------------------------------------------
@@ -284,3 +347,20 @@ technique RenderText
         PixelShader  = compile ps_3_0 FontPS(); 
     }
 }
+
+
+
+float4 PostProcessPS(float2 TextureUV  : TEXCOORD0) : COLOR0
+{ 
+	return float4(tex2D(g_ColorBuffer, TextureUV).xyz,1);
+}
+
+
+technique PostProcess
+{
+    pass P0
+    {        
+        PixelShader = compile ps_3_0 PostProcessPS();
+    }
+}
+

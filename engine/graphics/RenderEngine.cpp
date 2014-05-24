@@ -3,6 +3,7 @@
 #include "xstring.h"
 #include "TGCViewer.h"
 
+
 CRenderEngine::CRenderEngine()
 {
 	// dx
@@ -12,6 +13,15 @@ CRenderEngine::CRenderEngine()
 	g_pEffectStandard = NULL;	
 	g_pFont = NULL;
 
+	g_pPositionTexture = NULL;
+	g_pPositionSurf = NULL;
+	g_pColorTexture = NULL;
+	g_pColorSurf = NULL;
+	g_pNormalTexture = NULL;
+	g_pNormalSurf = NULL;
+	g_pDepthBuffer = NULL;
+	g_pFullScreenRenderTarget = NULL;
+	g_pFullScreenRenderTargetSurf = NULL;
 	// propias
 	cant_texturas = 0;
 	cant_mesh = 0;
@@ -191,6 +201,38 @@ void CRenderEngine::InitPipeline()
 	// Matrices de Transformacion
 	D3DXMatrixPerspectiveFovLH(&m_Proj, fov, aspect_ratio, near_plane, far_plane);
 	D3DXMatrixIdentity(&m_World);
+
+
+	// Deferred Render pipeline G-BUFFER
+	D3DXCreateTexture( g_pd3dDevice, screenWidth, screenHeight,1, D3DUSAGE_RENDERTARGET,D3DFMT_A32B32G32R32F,
+		D3DPOOL_DEFAULT, &g_pPositionTexture);
+	g_pPositionTexture->GetSurfaceLevel( 0, &g_pPositionSurf);
+
+	D3DXCreateTexture( g_pd3dDevice, screenWidth, screenHeight,1, D3DUSAGE_RENDERTARGET, D3DFMT_A32B32G32R32F,
+		D3DPOOL_DEFAULT, &g_pNormalTexture);
+	g_pNormalTexture->GetSurfaceLevel( 0, &g_pNormalSurf);
+
+	D3DXCreateTexture( g_pd3dDevice, screenWidth, screenHeight,1, D3DUSAGE_RENDERTARGET, D3DFMT_A8B8G8R8,
+		D3DPOOL_DEFAULT, &g_pColorTexture);
+	g_pColorTexture->GetSurfaceLevel( 0, &g_pColorSurf);
+
+	// Depth Sentcil sin multisample
+	g_pd3dDevice->CreateDepthStencilSurface(screenWidth,screenHeight,D3DFMT_D24S8,D3DMULTISAMPLE_NONE,0,TRUE,
+			&g_pDepthBuffer,NULL);
+
+	// FullScreen quad
+	D3DXCreateTexture( g_pd3dDevice, screenWidth, screenHeight,1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
+			D3DPOOL_DEFAULT, &g_pFullScreenRenderTarget );
+	g_pFullScreenRenderTarget->GetSurfaceLevel( 0, &g_pFullScreenRenderTargetSurf);
+
+	// Creo el full screen quad
+	SetupFullscreenQuad();
+
+	// Query multiple RT setting and set the num of passes required
+	g_pd3dDevice->GetDeviceCaps( &Caps );
+	// Caps.NumSimultaneousRTs;
+
+
 }
 
 
@@ -209,6 +251,17 @@ void CRenderEngine::Release()
 	SAFE_RELEASE(g_pFont);
 	// Sprite
 	SAFE_RELEASE(g_pSprite);
+	// Render Targets y surfaces
+	SAFE_RELEASE( g_pNormalTexture);
+	SAFE_RELEASE( g_pNormalSurf);
+	SAFE_RELEASE( g_pPositionTexture);
+	SAFE_RELEASE( g_pPositionSurf);
+	SAFE_RELEASE( g_pColorTexture);
+	SAFE_RELEASE( g_pColorSurf);
+	SAFE_RELEASE( g_pDepthBuffer);
+	// fullscreen quad
+	SAFE_RELEASE( g_pFullScreenRenderTarget );
+	SAFE_RELEASE( g_pFullScreenRenderTargetSurf);
 	// Device
 	SAFE_RELEASE(g_pd3dDevice);
 	SAFE_RELEASE(g_pD3D);
@@ -241,6 +294,37 @@ void CRenderEngine::Update(float p_elpased_time)
 	total_time += elapsed_time;
 }
 
+
+#ifdef DEFERRED_RENDER
+
+void CRenderEngine::RenderFrame(void (*lpfnRender)())
+{
+	// 1- paso: dibujo el G-buffer
+	RenderGBuffer(lpfnRender);
+
+	// 2- Ya tengo el G-BUFFER, ahora dibujo el fullscreenquad
+	RenderLigthPass();
+
+	// 3- Actualizo el tiempo y computo los fps y los dibujo 
+	ftime += elapsed_time;
+	++cant_frames;
+	if(ftime>1)
+	{
+		fps = (float)cant_frames/ftime;
+		ftime = 0;
+		cant_frames = 0;
+	}
+	char buffer[255];
+	sprintf(buffer,"FPS: %.1f",fps);
+	TextOut(10,10,buffer);
+
+	// Presento
+	g_pd3dDevice->Present( NULL, NULL, NULL, NULL );
+
+}
+
+
+#else
 void CRenderEngine::RenderFrame(void (*lpfnRender)())
 {
 	// Actualizo la matriz de view
@@ -254,12 +338,9 @@ void CRenderEngine::RenderFrame(void (*lpfnRender)())
 	SetShaderLighting();
 
 	g_pd3dDevice->BeginScene();
-
 	// dibujo a atravez del callback
 	if(lpfnRender!=NULL)
 		(*lpfnRender)();
-
-	// switch the back buffer and the front buffer
 	g_pd3dDevice->EndScene();
 
 	ftime += elapsed_time;
@@ -280,6 +361,84 @@ void CRenderEngine::RenderFrame(void (*lpfnRender)())
 	g_pd3dDevice->Present( NULL, NULL, NULL, NULL );
 
 }
+#endif
+
+
+void CRenderEngine::RenderGBuffer(void (*lpfnRender)())
+{
+	HRESULT hr;
+	// Actualizo la matriz de view
+	D3DXVECTOR3 up = D3DXVECTOR3(0,1,0);
+	D3DXMatrixLookAtLH(&m_View, &lookFrom, &lookAt, &up);
+
+	// Guardo el RT anterior
+	LPDIRECT3DSURFACE9 pRTOld = NULL;
+	g_pd3dDevice->GetRenderTarget( 0, &pRTOld );
+	LPDIRECT3DSURFACE9 pDSOld = NULL;
+	g_pd3dDevice->GetDepthStencilSurface( &pDSOld);
+
+	// Meto los render targets del G-buffer
+	hr = g_pd3dDevice->SetRenderTarget (0,g_pColorSurf);
+	hr = g_pd3dDevice->SetRenderTarget (1,g_pPositionSurf);
+	hr = g_pd3dDevice->SetRenderTarget (2,g_pNormalSurf);
+	// y pongo un DepthStencil compatible (sin multisampling), porque si no, no camina ni a patadas el mrt
+	hr = g_pd3dDevice->SetDepthStencilSurface( g_pDepthBuffer);
+
+	// Limpio el render targets y el depth buffer
+	hr = g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0), 1, 0 );
+
+	g_pd3dDevice->BeginScene();
+
+	// dibujo a atravez del callback
+	SetZEnabled(true);
+	if(lpfnRender!=NULL)
+		(*lpfnRender)();
+
+	// Restauro el render target anterior 
+	g_pd3dDevice->SetRenderTarget( 0, pRTOld );
+	g_pd3dDevice->SetRenderTarget( 1, NULL);
+	g_pd3dDevice->SetRenderTarget( 2, NULL);
+	SAFE_RELEASE( pRTOld );
+
+	// Restauro el zbuffer de la escena original
+	g_pd3dDevice->SetDepthStencilSurface(pDSOld);
+	SAFE_RELEASE( pDSOld);
+
+	g_pd3dDevice->EndScene();
+
+	// debug:
+	//D3DXSaveTextureToFile("test.bmp",D3DXIFF_BMP,g_pColorTexture,NULL);
+}
+
+
+// Default Light pass
+void CRenderEngine::RenderLigthPass()
+{
+	g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(240,240,240), 1, 0 );
+	SetZEnabled(false);
+	g_pEffect->SetTechnique("PostProcess");
+	g_pEffect->SetTexture( "g_txColorBuffer", g_pColorTexture);
+	RenderFullScreenQuad();
+}
+
+
+
+void CRenderEngine::RenderFullScreenQuad()
+{
+	g_pd3dDevice->BeginScene();
+	UINT cPasses;
+	g_pEffect->Begin( &cPasses, 0 );
+	for( int iPass = 0; iPass < cPasses; iPass++ )
+	{
+		g_pEffect->BeginPass( iPass );
+		g_pd3dDevice->SetFVF( D3DFVF_QUADVERTEX );
+		g_pd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, g_FullScreenQuad, sizeof( QUADVERTEX) );
+		g_pEffect->EndPass();
+	}
+	g_pEffect->End();
+	g_pd3dDevice->EndScene() ;
+}
+
 
 
 int CRenderEngine::LoadTexture(char *filename)
@@ -570,7 +729,7 @@ void CRenderEngine::TextOut(int x,int y,char *string)
 	rc.right = 0;
 	rc.bottom = 0;
 
-	g_pFont->DrawText( g_pSprite, string, -1, &rc, DT_NOCLIP, D3DXCOLOR(1,0,1,1));
+	g_pFont->DrawText( g_pSprite, string, -1, &rc, DT_NOCLIP, D3DXCOLOR(0,1,1,1));
 	g_pSprite->End();
 }
 
@@ -584,4 +743,41 @@ void rotar_xz(D3DXVECTOR3 *V , float an)
 	V->x = xr;
 	V->z = zr;
 }
+
+
+// helper
+//-----------------------------------------------------------------------------
+
+void CRenderEngine::SetupFullscreenQuad(  )
+{
+	D3DSURFACE_DESC desc;
+
+	g_pFullScreenRenderTargetSurf->GetDesc( &desc );
+
+	float fWidth5 = ( float )screenWidth - 0.5f;
+	float fHeight5 = ( float )screenHeight- 0.5f;
+
+	float fTexWidth1 = ( float )screenWidth / ( float)desc.Width;
+	float fTexHeight1 = ( float )screenHeight / (float)desc.Height;
+
+	// Fill in the vertex values
+	g_FullScreenQuad[0].pos = D3DXVECTOR4( fWidth5, -0.5f, 0.0f, 1.0f );
+	g_FullScreenQuad[0].tu = fTexWidth1;
+	g_FullScreenQuad[0].tv = 0.0f;
+
+	g_FullScreenQuad[1].pos = D3DXVECTOR4( fWidth5, fHeight5, 0.0f, 1.0f );
+	g_FullScreenQuad[1].tu = fTexWidth1;
+	g_FullScreenQuad[1].tv = fTexHeight1;
+
+
+	g_FullScreenQuad[2].pos = D3DXVECTOR4( -0.5f, -0.5f, 0.0f, 1.0f );
+	g_FullScreenQuad[2].tu = 0;
+	g_FullScreenQuad[2].tv = 0;
+
+
+	g_FullScreenQuad[3].pos = D3DXVECTOR4( -0.5f, fHeight5, 0.0f, 1.0f );
+	g_FullScreenQuad[3].tu = 0;
+	g_FullScreenQuad[3].tv = fTexHeight1 ;
+}
+
 

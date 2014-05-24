@@ -215,6 +215,7 @@ void CSolidView::RenderLoop()
 		escena.Update((float)elapsed_time);
 		if(p_robot)
 			p_robot->updateAnimation();
+		
 		escena.RenderFrame(RenderScene);
 
 		D3DXVECTOR3 ViewDir = escena.lookAt - escena.lookFrom;

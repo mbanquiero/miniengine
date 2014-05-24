@@ -66,7 +66,6 @@ public:
 
 	// Relacion con Shaders
 	virtual void SetVertexDeclaration();
-	virtual void SetShaders();
 
 	// Render
 	virtual void Draw();

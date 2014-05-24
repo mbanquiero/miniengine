@@ -351,12 +351,6 @@ void CMesh::SetVertexDeclaration()
 	bpv = sizeof(MESH_VERTEX);
 }
 
-void CMesh::SetShaders()
-{
-	LPDIRECT3DDEVICE9 g_pd3dDevice = engine->g_pd3dDevice;
-	engine->g_pEffect = engine->g_pEffectStandard;
-	engine->g_pEffect->SetTechnique("RenderScene");
-}
 
 
 void CMesh::Draw()
@@ -370,7 +364,11 @@ void CMesh::Draw()
 	// Seteo el vertex declaration
 	SetVertexDeclaration();
 	// Seteo los shaders (effect tecnica)
-	SetShaders();
+#ifdef DEFERRED_RENDER
+	engine->g_pEffect->SetTechnique("RenderGBuffer");
+#else
+	engine->g_pEffect->SetTechnique("RenderScene");
+#endif
 
 	// dibujo cada subset
 	for(int i=0;i<cant_layers;++i)

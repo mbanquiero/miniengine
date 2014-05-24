@@ -412,14 +412,6 @@ void CSkeletalMesh::SetVertexDeclaration()
 	bpv = sizeof(SKELETAL_MESH_VERTEX);
 }
 
-// set the shader objects
-void CSkeletalMesh::SetShaders()
-{
-	LPDIRECT3DDEVICE9 g_pd3dDevice = engine->g_pd3dDevice;
-	ID3DXEffect *g_pEffect = engine->g_pEffectStandard;
-	g_pEffect->SetTechnique("SkeletalRender");
-	g_pEffect->SetMatrixArray("bonesMatWorldArray",matBoneSpace,MAX_BONES);
-}
 
 
 void CSkeletalMesh::Draw()
@@ -432,7 +424,13 @@ void CSkeletalMesh::Draw()
 	// Seteo el vertex declaration
 	SetVertexDeclaration();
 	// Seteo los shaders (effect tecnica)
-	SetShaders();
+	ID3DXEffect *g_pEffect = engine->g_pEffectStandard;
+#ifdef DEFERRED_RENDER
+	g_pEffect->SetTechnique("SkeletalRenderGBuffer");
+#else
+	g_pEffect->SetTechnique("SkeletalRender");
+#endif
+	g_pEffect->SetMatrixArray("bonesMatWorldArray",matBoneSpace,MAX_BONES);
 
 	// dibujo cada subset
 	for(int i=0;i<cant_layers;++i)
