@@ -157,13 +157,16 @@ void CSolidView::ArmarEscena()
 	// Cargo un mesh de ejemplo
 	char mesh_path[MAX_PATH];
 	GetCurrentDirectory(MAX_PATH, mesh_path);
-	strcat(mesh_path, "\\media\\SkeletalAnimations\\BasicHuman\\WomanJeans-TgcSkeletalMesh.xml");
+	//strcat(mesh_path, "\\media\\SkeletalAnimations\\BasicHuman\\WomanJeans-TgcSkeletalMesh.xml");
+	strcat(mesh_path, "\\media\\QuakeRoom1\\QuakeMap-TgcScene.xml");
 	
 	//por algun motivo no anda usando un path relativo y usando \ en vez de /
 	//reemplazo todas las \\ por /
 	for (char * p = mesh_path; *p; p++) if (*p == '\\') *p = '/';
 
-	int nro_obj = escena.LoadMesh(mesh_path);
+	int nro_obj = -1;
+	//int nro_obj = escena.LoadMesh(mesh_path);
+	escena.LoadSceneFromXml(mesh_path);
 	
 	if(nro_obj!=-1)
 	{

@@ -191,6 +191,7 @@ char CTGCMeshParser::ParseXMLLine(char *buffer)
 
 			// tomo el nombre del mesh
 			char *p = strchr(buffer+12,'\'');
+			if(!p) p = strchr(buffer + 12, '\"');
 			if(p!=NULL)
 			{
 				*p = 0;
@@ -598,9 +599,17 @@ int CTGCMeshParser::LoadSceneHeader(char *filename,tgc_scene_mesh mesh_lst[])
 				mesh_lst[cant].pos.z = pos.y;
 				
 			}
+			else
+			{
+				mesh_lst[cant].pos.x = 0;
+				mesh_lst[cant].pos.y = 0;
+				mesh_lst[cant].pos.z = 0;
+			}
 
 			// tomo el nombre del mesh
 			p = strchr(buffer+12,'\'');
+			if(!p) p = strchr(buffer + 12, '\"');
+
 			if(p!=NULL)
 			{
 				*p = 0;

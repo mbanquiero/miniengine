@@ -8,8 +8,8 @@
 #define SAFE_RELEASE(p) { if ( (p) ) { (p)->Release(); (p) = 0; } }
 #define SAFE_DELETE(p) { if ( (p) ) { delete (p); (p) = 0; } }
 
-#define MAX_TEXTURAS	256
-#define MAX_MESH		256
+#define MAX_TEXTURAS	3000
+#define MAX_MESH		3000
 
 struct VERTEX
 {

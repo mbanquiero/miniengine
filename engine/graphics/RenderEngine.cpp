@@ -428,7 +428,7 @@ void CRenderEngine::RenderFullScreenQuad()
 	g_pd3dDevice->BeginScene();
 	UINT cPasses;
 	g_pEffect->Begin( &cPasses, 0 );
-	for( int iPass = 0; iPass < cPasses; iPass++ )
+	for( UINT iPass = 0; iPass < cPasses; iPass++ )
 	{
 		g_pEffect->BeginPass( iPass );
 		g_pd3dDevice->SetFVF( D3DFVF_QUADVERTEX );
