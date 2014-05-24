@@ -111,6 +111,8 @@ public:
 
 	// Soporte de archivos xml
 	bool LoadSceneFromXml(char *filename);
+	bool LoadSceneFromFlat(char *filename);
+	bool SaveSceneToFlat(char *filename);
 
 	virtual void SetShaderTransform();		// Transform and...
 	virtual void SetShaderLighting();		// Lighting

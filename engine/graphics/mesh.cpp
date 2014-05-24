@@ -262,7 +262,7 @@ bool CMesh::LoadFromXMLFile(CRenderEngine *p_engine,char *filename,char *mesh_na
 	//if(!keepData)
 		// una vez creada el mesh, los vertices, indices y attributes, en principio no sirven para una mierda
 			// pero le doy la chance de mantenerlos en memoria para casos muy especificos como el software renderer
-	ReleaseInternalData();
+	//ReleaseInternalData();
 
 	// Actualizo otros datos internos
 	engine = p_engine;

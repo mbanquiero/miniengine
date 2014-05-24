@@ -40,8 +40,8 @@ public:
 	int bpv;
 	char fname[MAX_PATH];
 	char mesh_id[255];
-	MESH_LAYER layers[MAX_MESH_LAYERS];
 	int cant_layers;
+	MESH_LAYER layers[MAX_MESH_LAYERS];
 	// Internal Data
 	MESH_VERTEX *pVertices;
 	DWORD *pIndices;

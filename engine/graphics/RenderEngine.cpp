@@ -539,8 +539,134 @@ bool CRenderEngine::LoadSceneFromXml(char *filename)
 			m_mesh[cant_mesh++] = p_mesh;
 		}
 	}
+
 	// si todo salio bien tiene que haber tantos mesh como cantidad queriamos cargar
 	return cant==cant_mesh?true:false;
+}
+
+bool CRenderEngine::LoadSceneFromFlat(char *filename)
+{
+	// Libero todos los recursos anteriores
+	ReleaseTextures();
+	ReleaseMeshes();
+	
+	FILE * file = fopen(filename, "rb");
+
+	if (!file)
+		return false; //el archivo no existe
+
+	char cur_dir[MAX_PATH] = {0};
+	char aux_path[MAX_PATH];
+
+	strncpy(cur_dir, filename, strrchr(filename, '/') - filename + 1);
+	
+	int cur_dir_len = strlen(cur_dir);
+
+	int signature;
+	int version;
+	int cant;
+
+	fread(&signature, sizeof(int), 1, file);
+	fread(&version, sizeof(int), 1, file);
+	fread(&cant, sizeof(int), 1, file);
+
+	// Ahora tengo que cargar los mesh pp dichos.
+	for (int i = 0; i < cant; ++i)
+	{
+		CMesh * m = new CMesh;
+
+		int blockSize = (int)&m->layers - (int)&m->m_pos;
+		fread(&m->m_pos, blockSize, 1, file);
+
+		//todo lo que es fijo ya esta leido con el fread anterior
+		//leo los vectores variables
+		m->pVertices = new MESH_VERTEX[m->cant_vertices];
+		m->pIndices = new DWORD[m->cant_indices];
+		m->pAttributes = new DWORD[m->cant_faces];
+
+		fread(m->layers, sizeof(MESH_LAYER), m->cant_layers, file);
+		fread(m->pVertices, sizeof(MESH_VERTEX), m->cant_vertices, file);
+		fread(m->pIndices, sizeof(DWORD), m->cant_indices, file);
+		fread(m->pAttributes, sizeof(DWORD), m->cant_faces, file);
+
+		for (int j = 0; j < m->cant_layers; j++)
+		{
+			//La textura se guarda de forma relativa la transformo en absoluta
+			//TODO: agregar validacion
+			sprintf(aux_path, "%s%s", cur_dir, m->layers[j].texture_name);
+			for (char * p = aux_path; *p; p++) if (*p == '\\') *p = '/';
+			strcpy(m->layers[j].texture_name, aux_path);
+		}
+
+		m->engine = this;
+		m->CreateMeshFromData(this);
+
+		m_mesh[cant_mesh++] = m;
+	}
+
+	fclose(file);
+
+	// si todo salio bien tiene que haber tantos mesh como cantidad queriamos cargar
+	return cant == cant_mesh ? true : false;
+}
+
+bool CRenderEngine::SaveSceneToFlat(char *filename)
+{
+	FILE * file = fopen(filename, "wb");
+
+	if (!file)
+		return false; //no se pudo crear el archivo
+
+	char cur_dir[MAX_PATH] = { 0 };
+	char aux_path[MAX_PATH];
+
+	strncpy(cur_dir, filename, strrchr(filename, '/') - filename + 1);
+
+	int cur_dir_len = strlen(cur_dir);
+	
+	int signature = *((int *)"GIGC");
+	int version = 1;
+	int cant = cant_mesh;
+
+	fwrite(&signature, sizeof(int), 1, file);
+	fwrite(&version, sizeof(int), 1, file);
+	fwrite(&cant, sizeof(int), 1, file);
+
+	// Ahora tengo que cargar los mesh pp dichos.
+	for (int i = 0; i < cant; ++i)
+	{
+		CMesh * m = m_mesh[i];
+
+		int blockSize = (int)&m->layers - (int)&m->m_pos;
+		fwrite(&m->m_pos, blockSize, 1, file);
+
+		for (int j = 0; j < m->cant_layers; j++)
+		{
+			//saco el principio del path de la textura para transformarla en relativa, OJO solo funciona
+			//para path relativos al cur_dir, TODO: agregar validacion
+			strcpy(aux_path, m->layers[j].texture_name);
+			ZeroMemory(m->layers[j].texture_name, sizeof(m->layers[j].texture_name)); //hago un zeromemory para que no vaya basura en el archivo
+			strcpy(m->layers[j].texture_name, aux_path + cur_dir_len);
+		}
+
+		//todo lo que es fijo ya esta escrito con el fwrite anterior
+		//grabo los vectores variables
+		fwrite(m->layers, sizeof(MESH_LAYER), m->cant_layers, file);
+		fwrite(m->pVertices, sizeof(MESH_VERTEX), m->cant_vertices, file);
+		fwrite(m->pIndices, sizeof(DWORD), m->cant_indices, file);
+		fwrite(m->pAttributes, sizeof(DWORD), m->cant_faces, file);
+
+		for (int j = 0; j < m->cant_layers; j++)
+		{
+			//restauro el path de las texturas ojo solo funciona si el nombre de la textura es mas largo que el cur_dir
+			strcpy(m->layers[j].texture_name, aux_path);
+		}
+
+	}
+
+	fclose(file);
+
+	return true;
 }
 
 
