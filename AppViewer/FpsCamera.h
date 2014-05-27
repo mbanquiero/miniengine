@@ -14,7 +14,7 @@ public:
 	Vector3 m_lookFrom;
 	Vector3 m_lookAt;
 	Matrix m_viewMatrix;
-	float m_rotationSpeed = 1.0f;
+	float m_rotationSpeed = 0.5f;
 	float m_wheelSpeed = 1.0f;
 	float m_panSpeed = 1.0;
 	float m_moveSpeed = 1000.0f;
@@ -28,6 +28,7 @@ public:
 	Vector3 m_startTarget;
 	bool animate = false;
 	bool cameraBlocked = false;
+	bool m_captureMouse = false;
 
 	CFpsCamera()
 	{
@@ -94,7 +95,7 @@ public:
 		{
 			Vector3 dm = InputManager::m_delta_mouse;
 
-			if (InputManager::IsLButtonDown())
+			if (InputManager::IsLButtonDown() || m_captureMouse)
 			{
 				//roto solo si el boton del mouse esta apretado
 				rotX = dm.X * m_rotationSpeed;
@@ -117,10 +118,21 @@ public:
 				float distancia = (m_lookAt - m_lookFrom).Length();
 				float deltamove = dm.Z * m_wheelSpeed;
 
-				if (deltamove >= distancia * 0.9999)
+				if (deltamove >= distancia * 0.9999999999)
 					deltamove = 0;
 
 				m_lookFrom += dir*deltamove;
+			}
+
+			if (InputManager::IsPressed(DInputKey::Key_M))
+			{				
+				m_captureMouse = !m_captureMouse;
+			}
+
+			if (m_captureMouse)
+			{
+				//TODO: Falta convertir el la posicion en absoluta, ahora esta relativa a la camara y no queda centrada
+				SetCursorPos(_engine.screenWidth / 2, _engine.screenHeight / 2);
 			}
 
 
