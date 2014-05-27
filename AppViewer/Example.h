@@ -1,7 +1,7 @@
 #pragma once
 
 #define REGISTER_EXAMPLE(exampleClass) \
-	namespace { \
+	namespace ___##exampleClass { \
 		struct StaticBlock { \
 			StaticBlock(){ add_example(new (exampleClass)); } \
 		}; \

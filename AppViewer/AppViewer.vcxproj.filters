@@ -16,6 +16,9 @@
     <Filter Include="Examples">
       <UniqueIdentifier>{4edf689c-5038-467c-a3cb-191a59ee13f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{9eafeef2-7e83-44cc-82e8-5ae240ee852d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -42,6 +45,12 @@
     <ClInclude Include="Example2.h">
       <Filter>Examples</Filter>
     </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="FpsCamera.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -55,6 +64,9 @@
     </ClCompile>
     <ClCompile Include="Example2.cpp">
       <Filter>Examples</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

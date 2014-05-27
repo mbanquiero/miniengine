@@ -1,9 +1,14 @@
 #pragma once
 #include "Example.h"
+#include "FpsCamera.h"
 
 class CExampleTest :
 	public IExample
 {
+
+protected:
+	CFpsCamera m_camera;
+
 public:
 	CExampleTest();
 	~CExampleTest();

@@ -19,6 +19,7 @@
 
 #include "AppViewer.h"
 #include "Example.h"
+#include "InputManager.h"
 
 
 // TODO: reference additional headers your program requires here

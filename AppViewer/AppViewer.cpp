@@ -228,16 +228,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		   case WM_KEYDOWN:
 			   switch ((int)Msg.wParam)	    // virtual-key code 
 			   {
-			   case VK_NEXT:
-				   //OnPgdn();
-				   break;
-			   case VK_PRIOR:
-				   //OnPgup();
-				   break;
-			   case VK_ESCAPE:
-				   seguir = FALSE;
-				   break;
-
 			   case VK_F1:
 				   _listar_ejemplos = !_listar_ejemplos;
 				   break;
@@ -266,16 +256,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 							break;
 			   }
 
-
-			   case 'W':
-				   _engine.lookFrom += ViewDir * 100;
-				   _engine.lookAt += ViewDir;
-				   break;
-
-			   case 'Z':
-				   _engine.lookFrom -= ViewDir * 100;
-				   _engine.lookAt += ViewDir;
-				   break;
 			   }
 			   break;
 		   }
