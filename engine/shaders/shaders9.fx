@@ -44,6 +44,30 @@ sampler_state
 	AddressV = Clamp;
 };
 
+texture  g_txPositionBuffer;
+sampler2D g_PositionBuffer =
+sampler_state
+{
+	Texture = <g_txPositionBuffer>;
+	MinFilter = Point;
+	MagFilter = Point;
+	MipFilter = Point;
+	AddressU = Clamp;
+	AddressV = Clamp;
+};
+
+texture  g_txNormalBuffer;
+sampler2D g_NormalBuffer =
+sampler_state
+{
+	Texture = <g_txNormalBuffer>;
+	MinFilter = Point;
+	MagFilter = Point;
+	MipFilter = Point;
+	AddressU = Clamp;
+	AddressV = Clamp;
+};
+
 
 struct VS_OUTPUT
 {
@@ -364,3 +388,54 @@ technique PostProcess
     }
 }
 
+
+
+float4 PhongLightingPS(float2 TextureUV  : TEXCOORD0) : COLOR0
+{
+	float4 base_color = float4(tex2D(g_ColorBuffer, TextureUV).xyz,1);
+	float k_ld = 0.75;
+	float k_ls = 0.6;
+	float k_la = 0.3;
+	// spot light, emite luz en una direccion especifica
+	// Pos = world position
+	float3 LightDiffuse = 0;
+	float3 LightSpecular = 0;
+	//float3 N = normalize(Input.normal);
+	float3 N = tex2D(g_NormalBuffer, TextureUV).xyz;
+	float3 Pos = tex2D(g_PositionBuffer, TextureUV).xyz;
+	float3 vLight = normalize( Pos - g_LightPos);
+	float cono = dot( vLight, g_LightDir);
+	float K = 0;
+	
+	// Verifico si el punto cae sobre el cono de luz
+	if( cono > g_LightPhi)
+	{
+		// es iluminado por la luz
+		K = 1;
+		if( cono <= g_LightTheta)
+			// Fall off
+			K = (cono-g_LightPhi) / (g_LightTheta-g_LightPhi);
+	
+		// 1- calcula la luz diffusa
+		LightDiffuse = saturate(dot(-vLight,N))*k_ld*K*g_LightColor;
+	
+		// 2- calcula la luz specular
+		float3 D = normalize(Pos-m_LookFrom);
+		float ks = saturate(dot(reflect(-vLight,N), D));
+		LightSpecular = pow(ks,5)*k_ls*K*g_LightColor;
+
+	}
+
+	// 3- suma luz diffusa + ambient + specular
+	float3 color = base_color.xyz*(saturate(k_la+LightDiffuse)) + LightSpecular;
+	return float4(color,1);
+}
+
+
+technique PhongLighting
+{
+    pass P0
+    {        
+        PixelShader = compile ps_3_0 PhongLightingPS();
+    }
+}

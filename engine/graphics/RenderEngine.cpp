@@ -416,8 +416,14 @@ void CRenderEngine::RenderLigthPass()
 {
 	g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(240,240,240), 1, 0 );
 	SetZEnabled(false);
-	g_pEffect->SetTechnique("PostProcess");
+	g_pEffect->SetTechnique("PhongLighting");
+	// seteo el G-buffer
 	g_pEffect->SetTexture( "g_txColorBuffer", g_pColorTexture);
+	g_pEffect->SetTexture( "g_txPositionBuffer", g_pPositionTexture);
+	g_pEffect->SetTexture( "g_txNormalBuffer", g_pNormalTexture);
+	// Y actualizo las variables en el shader de la parte de lighting, que no cambian de frame a frame
+	SetShaderLighting();
+	// post process quuad
 	RenderFullScreenQuad();
 }
 
@@ -721,7 +727,7 @@ void CRenderEngine::SetShaderLighting()
 	float phi = 2;
 	float theta = 0.95f;
 
-	D3DXVECTOR3 vLightPos = D3DXVECTOR3(0,2500,0);
+	D3DXVECTOR3 vLightPos = D3DXVECTOR3(100,1250,1000);
 	D3DXVECTOR3 vLightDir = D3DXVECTOR3(0,-1,0);
 	D3DXVECTOR3 vLightColor = D3DXVECTOR3(1,1,1);
 

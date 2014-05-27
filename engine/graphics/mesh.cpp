@@ -400,8 +400,9 @@ void CMesh::DrawSubset(int i)
 }
 
 // ---------------------------------------------
-void CMesh::CreateTri(D3DXVECTOR3 a, D3DXVECTOR3 b,D3DXVECTOR3 c)
+void CMesh::CreateTri(CRenderEngine *p_engine,D3DXVECTOR3 a, D3DXVECTOR3 b,D3DXVECTOR3 c)
 {
+	engine = p_engine;
 	cant_faces = 1;
 	cant_indices = cant_vertices = 3;
 	pVertices = new MESH_VERTEX[cant_vertices];
@@ -431,8 +432,9 @@ void CMesh::CreateTri(D3DXVECTOR3 a, D3DXVECTOR3 b,D3DXVECTOR3 c)
 }
 
 
-void CMesh::CreateGrid(D3DXVECTOR3 pos,float dx,float dz,int c,int f,char *texture_name,char *normal_map_name)
+void CMesh::CreateGrid(CRenderEngine *p_engine,D3DXVECTOR3 pos,float dx,float dz,int c,int f,char *texture_name,char *normal_map_name)
 {
+	engine = p_engine;
 	cant_vertices = (c+1)*(f+1);
 	cant_faces = 2 * f * c;
 	cant_indices = 3 * cant_faces;

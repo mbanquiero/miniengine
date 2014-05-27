@@ -17,6 +17,8 @@
 
 CRenderEngine escena;
 CSkeletalMesh *p_robot = NULL;
+CMesh *p_piso = NULL;
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -169,19 +171,37 @@ void CSolidView::ArmarEscena()
 	//int nro_obj = escena.LoadMesh(mesh_path);
 	//escena.LoadSceneFromXml(mesh_path);
 
+	// Escenario del quake
 	escena.LoadSceneFromFlat(mesh_path);
-	
+	scaleToFit();
+
+	/*
 	if(nro_obj!=-1)
 	{
 		p_robot = (CSkeletalMesh *)escena.m_mesh[nro_obj];
 		p_robot->initAnimation(0,true,30);
 	}
-	scaleToFit();
+	*/
+
+	// Test de lighting
+	/*
+	p_piso = new CMesh();
+	p_piso->CreateGrid(&escena,D3DXVECTOR3(0,0,0),1000,1000,10,10,"C:\\TgcViewer\\Examples\\Media\\Texturas\\paredLisa.jpg");
+	escena.lookAt = D3DXVECTOR3(500,0,500);
+	escena.lookFrom = D3DXVECTOR3(1500,300,1500);
+	*/
 }
 
 
 void RenderScene()
 {
+
+	if(p_piso!=NULL)
+	{
+		p_piso->Render();
+		return;
+	}
+
 	//if(p_robot!=NULL)
 	//{
 		// mesh con una animacion
@@ -225,6 +245,7 @@ void CSolidView::RenderLoop()
 		escena.RenderFrame(RenderScene);
 
 		D3DXVECTOR3 ViewDir = escena.lookAt - escena.lookFrom;
+		ViewDir.y = 0;
 		D3DXVec3Normalize(&ViewDir,&ViewDir);
 		MSG Msg;
 		ZeroMemory( &Msg, sizeof(Msg) );
@@ -299,9 +320,6 @@ void CSolidView::OnMouseMove(UINT nFlags, CPoint point)
 	{
 		case EV_3D_REALTIME:
 			{
-				// la camara vuelo de pajaro y las camas auxiliares no permiten
-				// rotar la escena, eso debido a que setean un farplane ajustado
-				// y al rotar se produce el artifact
 				int dx = point.x-x0;
 				int dy = point.y-y0;
 				x0 = point.x;
@@ -309,7 +327,6 @@ void CSolidView::OnMouseMove(UINT nFlags, CPoint point)
 				double tot_x = 800;
 				double an = dx/tot_x*2*3.1415;
 				// uso el desplazamiento vertical, par elevar o bajar el punto de vista
-				//escena.LF.z += 2*dy/ey;
 				// uso el desplazamiento en x para rotar el punto de vista  en el plano xy
 				rotar_xz(&escena.lookFrom , (float)an);
 				escena.lookFrom.y += 2*dy*mxp;

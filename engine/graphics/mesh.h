@@ -80,8 +80,8 @@ public:
 	
 
 	// interface de creacion de objetos
-	virtual void CreateTri(D3DXVECTOR3 a, D3DXVECTOR3 b,D3DXVECTOR3 c);
-	virtual void CreateGrid(D3DXVECTOR3 pos,float dx,float dz,int c,int f,char *texture_name,char *normal_map_name="");
+	virtual void CreateTri(CRenderEngine *p_engine,D3DXVECTOR3 a, D3DXVECTOR3 b,D3DXVECTOR3 c);
+	virtual void CreateGrid(CRenderEngine *p_engine,D3DXVECTOR3 pos,float dx,float dz,int c,int f,char *texture_name,char *normal_map_name="");
 
 };
 
