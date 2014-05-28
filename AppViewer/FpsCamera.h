@@ -20,14 +20,14 @@ public:
 	float m_moveSpeed = 1000.0f;
 	float m_jumpSpeed = 500.0f;
 
-	float m_animTime = 800;
+	float m_animTime = 1;
 	float m_deltaAnimTime = 0;
 	Vector3 m_endPos;
 	Vector3 m_endTarget;
 	Vector3 m_startPos;
 	Vector3 m_startTarget;
-	bool animate = false;
-	bool cameraBlocked = false;
+	bool m_animate = false;
+	bool m_cameraBlocked = false;
 	bool m_captureMouse = false;
 
 	CFpsCamera()
@@ -66,7 +66,7 @@ public:
 	virtual void UpdateCamera()
 	{
 		float elapsed_time = _engine.elapsed_time;
-		if (animate)
+		if (m_animate)
 		{
 			//Muevo El ojo de la camara hacia el punto destino
 			m_deltaAnimTime += elapsed_time;
@@ -77,7 +77,7 @@ public:
 
 			if (m_deltaAnimTime >= m_animTime)
 			{
-				animate = false;
+				m_animate = false;
 				m_lookFrom = m_endPos;
 				m_lookAt = m_endTarget;
 				m_deltaAnimTime = 0;
@@ -91,7 +91,7 @@ public:
 		float beta = atan2(ndir.Y, sqrt(ndir.X*ndir.X + ndir.Z*ndir.Z))*FastMath::RADIANS_TO_DEGREES;
 		float rotX = 0;
 		float rotY = 0;
-		if (!cameraBlocked)
+		if (!m_cameraBlocked)
 		{
 			Vector3 dm = InputManager::m_delta_mouse;
 
@@ -122,6 +122,17 @@ public:
 					deltamove = 0;
 
 				m_lookFrom += dir*deltamove;
+			}
+
+			if (InputManager::IsPressed(DInputKey::Key_C))
+			{
+				m_endPos = m_lookFrom;
+				m_endTarget = m_lookAt;
+			}
+
+			if (InputManager::IsPressed(DInputKey::Key_P))
+			{
+				AnimateTo(m_endPos, m_endTarget);
 			}
 
 			if (InputManager::IsPressed(DInputKey::Key_M))
@@ -194,6 +205,7 @@ public:
 				m_lookAt += move;
 				m_lookFrom += move;
 			}
+
 		}
 
 		//creo un vector perpendicular a la direccion de la camara y la direccion arriba para rotar sonbre ese eje.
@@ -216,7 +228,7 @@ public:
 		m_endPos = newLookFrom;
 		m_startTarget = m_lookAt;
 		m_endTarget = newLookAt;
-		animate = true;
+		m_animate = true;
 		m_deltaAnimTime = 0.0;
 	}
 
