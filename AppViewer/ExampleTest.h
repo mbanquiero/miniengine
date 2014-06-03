@@ -17,5 +17,6 @@ public:
 	virtual void init();
 	virtual void render(float elapsedTime);
 	virtual void close();
+	virtual void loadEscene(const char * path);
 };
 

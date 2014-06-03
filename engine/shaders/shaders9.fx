@@ -24,12 +24,12 @@ texture g_Texture;
 sampler TextureSampler = 
 sampler_state
 {
-    Texture = <g_Texture>;
-    MipFilter = LINEAR;
-    MinFilter = LINEAR;
-    MagFilter = LINEAR;
-	AddressU = MIRROR;
-	AddressV = MIRROR;
+	Texture = <g_Texture>;
+	MipFilter = LINEAR;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
 texture  g_txColorBuffer;
@@ -71,31 +71,31 @@ sampler_state
 
 struct VS_OUTPUT
 {
-    float4 position : POSITION;
+	float4 position : POSITION;
 	float2 texCoords : TEXCOORD0;
-    float3 normal: NORMAL;
+	float3 normal: NORMAL;
 	float3 wpos : TEXCOORD1;					// world position
 
 };
 
 VS_OUTPUT RenderSceneVS(float4 position : POSITION, float3 normal: NORMAL, float2 texCoords: TEXCOORD0)
 {
-    VS_OUTPUT output;
+	VS_OUTPUT output;
 	position.w = 1;
-    output.position = mul(position, m_World);
-    output.position = mul(output.position, m_View);
-    output.position = mul(output.position, m_Proj);
-    output.normal = normalize(mul(normal, (float3x3)m_World));
+	output.position = mul(position, m_World);
+	output.position = mul(output.position, m_View);
+	output.position = mul(output.position, m_Proj);
+	output.normal = normalize(mul(normal, (float3x3)m_World));
 	output.texCoords = texCoords;
 	float4 pos_real = mul(position, m_World);
 	output.wpos = pos_real.xyz;
-    return output;
+	return output;
 }
 
 
 float4 RenderScenePS(VS_OUTPUT Input) : COLOR0
 {
-    float4 base_color = tex2D(TextureSampler,Input.texCoords);
+	float4 base_color = tex2D(TextureSampler,Input.texCoords);
 	float k_ld = 0.75;
 	float k_ls = 0.6;
 	float k_la = 0.3;
@@ -142,29 +142,29 @@ struct G_BUFFER
 G_BUFFER RenderGBufferPS(VS_OUTPUT Input)
 {
 	G_BUFFER Output;
-    Output.color = tex2D(TextureSampler,Input.texCoords);
-    Output.position = float4(Input.wpos,1);
-    Output.normal = float4(Input.normal,1);
+	Output.color = tex2D(TextureSampler,Input.texCoords);
+	Output.position = float4(Input.wpos,1);
+	Output.normal = float4(Input.normal,1);
 	return Output;
 }
 
 technique RenderScene
 {
-    pass P0
-    {          
-        VertexShader = compile vs_3_0 RenderSceneVS();
-        PixelShader  = compile ps_3_0 RenderScenePS(); 
-    }
+	pass P0
+	{          
+		VertexShader = compile vs_3_0 RenderSceneVS();
+		PixelShader  = compile ps_3_0 RenderScenePS(); 
+	}
 }
 
 
 technique RenderGBuffer
 {
-    pass P0
-    {          
-        VertexShader = compile vs_3_0 RenderSceneVS();
-        PixelShader  = compile ps_3_0 RenderGBufferPS(); 
-    }
+	pass P0
+	{          
+		VertexShader = compile vs_3_0 RenderSceneVS();
+		PixelShader  = compile ps_3_0 RenderGBufferPS(); 
+	}
 }
 
 
@@ -174,31 +174,31 @@ float4x4 bonesMatWorldArray[26];
 // Vertex Shader Mesh Skeletal mesh
 struct VS_SKIN_INPUT
 {
-    float4 position : POSITION;
-    float3 normal: NORMAL;
+	float4 position : POSITION;
+	float3 normal: NORMAL;
 	float2 texCoords : TEXCOORD0;
-    float3 tangent: TANGENT;
-    float3 binormal: BINORMAL;
+	float3 tangent: TANGENT;
+	float3 binormal: BINORMAL;
 	float4 BlendWeights : BLENDWEIGHT;
-    float4 BlendIndices : BLENDINDICES;
+	float4 BlendIndices : BLENDINDICES;
 };
 
 struct VS_SKIN_OUTPUT
 {
-    float4 position : POSITION;
+	float4 position : POSITION;
 	float2 texCoords : TEXCOORD0;
-    float3 normal: NORMAL;
-    float3 tangent: TANGENT;
-    float3 binormal: BINORMAL;
+	float3 normal: NORMAL;
+	float3 tangent: TANGENT;
+	float3 binormal: BINORMAL;
 	float4 BlendWeights : BLENDWEIGHT;
-    float4 BlendIndices : BLENDINDICES;
+	float4 BlendIndices : BLENDINDICES;
 	float3 wpos : TEXCOORD1;					// world position
 
 };
 
 VS_SKIN_OUTPUT SkeletalVShader(VS_SKIN_INPUT Input)
 {
-    VS_SKIN_OUTPUT output;
+	VS_SKIN_OUTPUT output;
 	Input.position.w = 1;
 
 	//Skinning 
@@ -218,9 +218,9 @@ VS_SKIN_OUTPUT SkeletalVShader(VS_SKIN_INPUT Input)
 	output.position = mul(skinPosition, m_WorldViewProj);
 
 	// Propago la normal, tangent y binormal en world space
-    output.normal = normalize(mul(skinNormal, (float3x3)m_TransposeInvWorld));
-    output.tangent= normalize(mul(skinTangent, (float3x3)m_TransposeInvWorld));
-    output.binormal = normalize(mul(skinBinormal, (float3x3)m_TransposeInvWorld));
+	output.normal = normalize(mul(skinNormal, (float3x3)m_TransposeInvWorld));
+	output.tangent= normalize(mul(skinTangent, (float3x3)m_TransposeInvWorld));
+	output.binormal = normalize(mul(skinBinormal, (float3x3)m_TransposeInvWorld));
 
 	// Propago texturas y blend para debug
 	output.texCoords = Input.texCoords;
@@ -230,13 +230,13 @@ VS_SKIN_OUTPUT SkeletalVShader(VS_SKIN_INPUT Input)
 	// propago la pos en world space para computos de lighting 
 	float4 pos_real = mul(Input.position, m_World);
 	output.wpos = pos_real.xyz;
-    return output;
+	return output;
 }
 
 
 float4 SkeletalPShader(VS_SKIN_OUTPUT Input) : COLOR0
 {
-    float4 base_color = tex2D(TextureSampler,Input.texCoords);
+	float4 base_color = tex2D(TextureSampler,Input.texCoords);
 	float k_ld = 0.75;
 	float k_ls = 0.6;
 	float k_la = 0.3;
@@ -281,7 +281,7 @@ G_BUFFER SkeletalGBufferPS(VS_SKIN_OUTPUT Input)
 {
 
 	G_BUFFER Output;
-    Output.color = tex2D(TextureSampler,Input.texCoords);
+	Output.color = tex2D(TextureSampler,Input.texCoords);
 	Output.normal = float4(normalize(Input.normal),1);
 	Output.position = float4(Input.wpos,1);
 	//float3 Tg = normalize(Input.tangent);
@@ -292,21 +292,21 @@ G_BUFFER SkeletalGBufferPS(VS_SKIN_OUTPUT Input)
 
 technique SkeletalRender
 {
-    pass P0
-    {          
-        VertexShader = compile vs_3_0 SkeletalVShader();
-        PixelShader  = compile ps_3_0 SkeletalPShader(); 
-    }
+	pass P0
+	{          
+		VertexShader = compile vs_3_0 SkeletalVShader();
+		PixelShader  = compile ps_3_0 SkeletalPShader(); 
+	}
 }
 
 
 technique SkeletalRenderGBuffer
 {
-    pass P0
-    {          
-        VertexShader = compile vs_3_0 SkeletalVShader();
-        PixelShader  = compile ps_3_0 SkeletalGBufferPS(); 
-    }
+	pass P0
+	{          
+		VertexShader = compile vs_3_0 SkeletalVShader();
+		PixelShader  = compile ps_3_0 SkeletalGBufferPS(); 
+	}
 }
 
 
@@ -314,23 +314,23 @@ technique SkeletalRenderGBuffer
 // Vertex Shader para Quad 2d
 struct VS_QUAD_OUTPUT
 {
-    float4 position : POSITION;
+	float4 position : POSITION;
 	float2 texCoords : TEXCOORD0;
 };
 
 VS_QUAD_OUTPUT SpriteVS(float4 position : POSITION, float2 texCoords: TEXCOORD0)
 {
-    VS_QUAD_OUTPUT output;
+	VS_QUAD_OUTPUT output;
 	output.position.zw = 1;
 	output.position.xy = position.xy;
 	output.texCoords.xy = texCoords;
-    return output;
+	return output;
 }
 
 
 float4 SpritePS(VS_QUAD_OUTPUT Input) : COLOR0
 {
-    float4 base_color = tex2D(TextureSampler,Input.texCoords);
+	float4 base_color = tex2D(TextureSampler,Input.texCoords);
 	base_color.a *= 0.5;
 	return base_color;
 }
@@ -338,7 +338,7 @@ float4 SpritePS(VS_QUAD_OUTPUT Input) : COLOR0
 
 float4 FontPS(VS_QUAD_OUTPUT Input) : COLOR0
 {
-    float4 base_color = tex2D(TextureSampler,Input.texCoords);
+	float4 base_color = tex2D(TextureSampler,Input.texCoords);
 	if(base_color.r==0 || base_color.a<0.5)
 		base_color.a = 0;			// Transparente
 	else
@@ -354,22 +354,22 @@ float4 FontPS(VS_QUAD_OUTPUT Input) : COLOR0
 
 technique RenderSprite
 {
-    pass P0
-    {          
-        VertexShader = compile vs_3_0 SpriteVS();
-        PixelShader  = compile ps_3_0 SpritePS(); 
-    }
+	pass P0
+	{          
+		VertexShader = compile vs_3_0 SpriteVS();
+		PixelShader  = compile ps_3_0 SpritePS(); 
+	}
 }
 
 
 
 technique RenderText
 {
-    pass P0
-    {          
-        VertexShader = compile vs_3_0 SpriteVS();
-        PixelShader  = compile ps_3_0 FontPS(); 
-    }
+	pass P0
+	{          
+		VertexShader = compile vs_3_0 SpriteVS();
+		PixelShader  = compile ps_3_0 FontPS(); 
+	}
 }
 
 
@@ -382,10 +382,10 @@ float4 PostProcessPS(float2 TextureUV  : TEXCOORD0) : COLOR0
 
 technique PostProcess
 {
-    pass P0
-    {        
-        PixelShader = compile ps_3_0 PostProcessPS();
-    }
+	pass P0
+	{        
+		PixelShader = compile ps_3_0 PostProcessPS();
+	}
 }
 
 
@@ -434,8 +434,8 @@ float4 PhongLightingPS(float2 TextureUV  : TEXCOORD0) : COLOR0
 
 technique PhongLighting
 {
-    pass P0
-    {        
-        PixelShader = compile ps_3_0 PhongLightingPS();
-    }
+	pass P0
+	{        
+		PixelShader = compile ps_3_0 PhongLightingPS();
+	}
 }

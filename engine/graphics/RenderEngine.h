@@ -9,7 +9,7 @@
 #define SAFE_DELETE(p) { if ( (p) ) { delete (p); (p) = 0; } }
 
 #define MAX_TEXTURAS	3000
-#define MAX_MESH		3000
+#define MAX_MESH		10000
 
 struct VERTEX
 {
@@ -77,7 +77,7 @@ public:
 
 	// Pool de meshes
 	int cant_mesh;
-	CMesh *m_mesh[MAX_MESH];
+	CMesh **m_mesh;
 
 	float total_time;
 	float elapsed_time;

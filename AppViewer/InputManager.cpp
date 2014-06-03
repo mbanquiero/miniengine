@@ -15,6 +15,9 @@ LPDIRECTINPUTDEVICE8 InputManager::m_pMouse = NULL;
 
 bool InputManager::Init(void)
 {
+	if (m_dinput != NULL)
+		return true;
+
 	DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&m_dinput, NULL);
 	m_dinput->CreateDevice(GUID_SysKeyboard, &m_pKeyboard, NULL);
 	m_dinput->CreateDevice(GUID_SysMouse, &m_pMouse, NULL);
@@ -34,6 +37,11 @@ void InputManager::Shutdown(void)
 {
 	m_pKeyboard->Release();
 	m_pMouse->Release();
+	m_dinput->Release();
+
+	m_pKeyboard = NULL;
+	m_pMouse = NULL;
+	m_dinput = NULL;
 }
 
 void InputManager::Update()

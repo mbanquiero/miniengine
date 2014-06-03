@@ -19,7 +19,7 @@ typedef struct MESH_LAYER {
 	char normal_heightmap_name[MAX_PATH];			// NormalHeightMap
 } MESH_LAYER;
 
-#define MAX_MESH_LAYERS			100 //32
+#define MAX_MESH_LAYERS			200 //32
 
 
 struct MESH_VERTEX

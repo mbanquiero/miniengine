@@ -68,6 +68,9 @@
     <ClCompile Include="InputManager.cpp">
       <Filter>Tools</Filter>
     </ClCompile>
+    <ClCompile Include="FpsCamera.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AppViewer.rc">

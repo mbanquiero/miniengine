@@ -99,6 +99,7 @@
     <ClCompile Include="graphics\texture.cpp" />
     <ClCompile Include="graphics\TGCViewer.cpp" />
     <ClCompile Include="graphics\xstring.cpp" />
+    <ClCompile Include="math\FastMath.cpp" />
     <ClCompile Include="math\Matrix.cpp" />
     <ClCompile Include="math\Vector2.cpp" />
     <ClCompile Include="math\Vector3.cpp" />

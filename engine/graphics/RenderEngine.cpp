@@ -28,12 +28,17 @@ CRenderEngine::CRenderEngine()
 	total_time = 0;
 	elapsed_time = 0;
 	ftime = 0;
+
+	m_mesh = new CMesh *[MAX_MESH];
 }
 
 CRenderEngine::~CRenderEngine()
 {
 	if(g_pd3dDevice!=NULL)
 		Release();
+	
+	delete[] m_mesh;
+	m_mesh = NULL;
 }
 
 
@@ -265,6 +270,7 @@ void CRenderEngine::Release()
 	// Device
 	SAFE_RELEASE(g_pd3dDevice);
 	SAFE_RELEASE(g_pD3D);
+
 }
 
 void CRenderEngine::ReleaseTextures()
@@ -520,7 +526,7 @@ bool CRenderEngine::LoadSceneFromXml(char *filename)
 {
 
 	CTGCMeshParser loader;
-	tgc_scene_mesh tgc_mesh_lst[MAX_MESH];
+	tgc_scene_mesh *tgc_mesh_lst = new tgc_scene_mesh[MAX_MESH];
 	memset(tgc_mesh_lst,0,sizeof(tgc_mesh_lst));
 	int cant = loader.LoadSceneHeader(filename,tgc_mesh_lst);
 
@@ -545,6 +551,8 @@ bool CRenderEngine::LoadSceneFromXml(char *filename)
 			m_mesh[cant_mesh++] = p_mesh;
 		}
 	}
+
+	delete[] tgc_mesh_lst;
 
 	// si todo salio bien tiene que haber tantos mesh como cantidad queriamos cargar
 	return cant==cant_mesh?true:false;

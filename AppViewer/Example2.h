@@ -1,7 +1,12 @@
 #pragma once
 
+#include "FpsCamera.h"
+
 class Example2: public IExample
 {
+public:
+	CFpsCamera m_camera;
+
 public:
 	Example2();
 	~Example2();

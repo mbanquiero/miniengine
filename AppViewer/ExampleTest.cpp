@@ -4,6 +4,15 @@
 
 REGISTER_EXAMPLE(CExampleTest)
 
+const char * _escenas [] = {
+	"\\media\\QuakeRoom1\\QuakeMap-TgcScene.flat",
+	"\\media\\QuakeRoom2\\q2.flat",
+	"\\media\\QuakeRoom3\\city.flat"
+};
+
+const int cant_escenas = sizeof(_escenas) / sizeof(char*);
+int _escena_sel = 0;
+
 CExampleTest::CExampleTest()
 {
 }
@@ -15,7 +24,7 @@ CExampleTest::~CExampleTest()
 
 const char * CExampleTest::getName()
 {
-	return " Escenario de Prueba";
+	return "Escenario de quake";
 }
 
 const char * CExampleTest::getDescription()
@@ -81,25 +90,31 @@ void CompactMeshes()
 	
 }
 
-void CExampleTest::init()
+void CExampleTest::loadEscene(const char * path)
 {
-	InputManager::Init();
-
 	//cargo el mesh del escenario del quake
 	char mesh_path[MAX_PATH];
 	GetCurrentDirectory(MAX_PATH, mesh_path);
-	strcat(mesh_path, "\\media\\QuakeRoom1\\QuakeMap-TgcScene.flat");
+	strcat(mesh_path, path);
 
 	//por algun motivo no anda usando un path relativo y usando \ en vez de /
 	//reemplazo todas las \\ por /
 	for (char * p = mesh_path; *p; p++) if (*p == '\\') *p = '/';
 
 	_engine.LoadSceneFromFlat(mesh_path);
+}
+
+void CExampleTest::init()
+{
+	InputManager::Init();
+
+	
+	loadEscene(_escenas[_escena_sel]);
 
 	m_camera.m_lookFrom.Set(500, 100, 400);
 	m_camera.m_lookAt.Set(500, 100, 500);
 
-	CompactMeshes();
+	//CompactMeshes(); //el archivo ya esta compactado
 
 }
 
@@ -108,6 +123,21 @@ void CExampleTest::render(float elapsedTime)
 	InputManager::Update();
 
 	m_camera.UpdateCamera();
+
+
+	if (InputManager::IsPressed(DInputKey::Key_PageDown))
+	{
+		_escena_sel = (_escena_sel+1) % cant_escenas;
+		loadEscene(_escenas[_escena_sel]);
+	}
+
+	if (InputManager::IsPressed(DInputKey::Key_PageUp))
+	{
+		_escena_sel = (_escena_sel - 1 + cant_escenas) % cant_escenas;
+		loadEscene(_escenas[_escena_sel]);
+	}
+
+
 	
 	_engine.lookAt = m_camera.m_lookAt;
 	_engine.lookFrom = m_camera.m_lookFrom;
