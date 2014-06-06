@@ -8,6 +8,20 @@ CFpsCamera::CFpsCamera()
 {
 	m_lookFrom.Set(0, 0, -100);
 	m_lookAt.Set(0, 0, 0);
+	
+	m_rotationSpeed = 0.5f;
+	m_wheelSpeed = 1.0f;
+	m_panSpeed = 1.0;
+	m_moveSpeed = 1000.0f;
+	m_jumpSpeed = 500.0f;
+
+	m_animTime = 1;
+	m_deltaAnimTime = 0;
+
+	m_startTarget;
+	m_animate = false;
+	m_cameraBlocked = false;
+	m_captureMouse = false;
 }
 
 CFpsCamera::~CFpsCamera()
