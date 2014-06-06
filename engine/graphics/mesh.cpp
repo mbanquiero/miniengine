@@ -106,89 +106,12 @@ void CMesh::CalcularMatriz(D3DXVECTOR3 pos , D3DXVECTOR3 size , D3DXVECTOR3 rot,
 // y ahi se necesita un device y un engine concretos
 bool CMesh::LoadDataFromFile(char *filename)
 {
-	FILE *fp = fopen(filename,"rb");
-	if(fp==NULL)
+	CMeshDataLoader loader;
+	if(!loader.LoadMesh(this,filename))
 		return false;
-
-	int header[9];
-	// leo el header
-	fread(&header,sizeof(header),1,fp);
-	int version = header[6];
-
-	// Cantidad de layers
-	DWORD g_dwNumMaterials;
-	fread(&g_dwNumMaterials,sizeof(g_dwNumMaterials),1,fp);
-	cant_layers = g_dwNumMaterials;
-
-	for(DWORD i=0;i<g_dwNumMaterials;++i)
-	{
-		// nombre de la textura
-		char texture_name[256];
-		memset(texture_name,0,sizeof(texture_name));
-		fread(texture_name,sizeof(texture_name),1,fp);
-
-		// Material del layer
-		D3DMATERIAL9 g_pMeshMaterials;
-		fread(&g_pMeshMaterials,sizeof(D3DMATERIAL9),1,fp);
-
-		// Abmient y diffuse se usan tal cual (para ambient y diffuse respectivamente)
-		// Pero specular y emissive (que no tiene soporte fixed), estan hardcodeados para usar asi:
-		// Specular.R = luz specular pp dicha
-		// Specular.G, Specular.B -> no usados, se supone que estan en cero
-		// Emissive.r = Reflexion
-		// Emissive.g = Transparencia
-		// Emissive.b = no usado
-		// Emissive.b = no usado
-		// el solid usa esos campos para almacenar info de transparencia y reflexion no
-		// soportada en forma nativa por el D3DMATERIAL del Directx
-
-		layers[i].Ambient = g_pMeshMaterials.Ambient;
-		layers[i].Diffuse = g_pMeshMaterials.Diffuse;
-		layers[i].ke = g_pMeshMaterials.Specular.b;
-		layers[i].kr = g_pMeshMaterials.Emissive.r;
-		layers[i].kt = g_pMeshMaterials.Emissive.g;
-		strcpy(layers[i].texture_name,texture_name);
-	}
-
-	// Cantidad de caras
-	fread(&cant_faces,sizeof(cant_faces),1,fp);
-	// Cantidad de vertices
-	fread(&cant_vertices,sizeof(cant_vertices),1,fp);
-	// Bytes por vertice (usualmente bps = 32 bytes)
-	fread(&bpv,sizeof(bpv),1,fp);
-	// Vertex buffer
-	pVertices = new MESH_VERTEX[cant_vertices];
-	fread(pVertices,bpv,cant_vertices,fp);
-	// Transformo de lepton format a dx format
-	for(DWORD i=0;i<cant_vertices;++i)
-	{
-		float x = pVertices[i].position.x;
-		float y = pVertices[i].position.y;
-		float z = pVertices[i].position.z;
-		pVertices[i].position.x = y;
-		pVertices[i].position.y = z;
-		pVertices[i].position.z = x;
-
-		float nx = pVertices[i].normal.x;
-		float ny = pVertices[i].normal.y;
-		float nz = pVertices[i].normal.z;
-		pVertices[i].normal.x = ny;
-		pVertices[i].normal.y = nz;
-		pVertices[i].normal.z = nx;
-	}
-
-	cant_indices = cant_faces*3;
-	pIndices = new DWORD[cant_indices];
-	// Index buffer
-	fread(pIndices,cant_indices*sizeof(DWORD),1,fp);
-	// nro de layer por face (attributtes)
-	pAttributes = new DWORD[cant_faces];
-	fread(pAttributes,cant_faces*sizeof(DWORD),1,fp);
-	fclose(fp);
 
 	// Aprovecho para computar el tamaño y la posicion del mesh
 	ComputeBoundingBox();
-
 	return true;
 }
 
@@ -500,4 +423,95 @@ void CMesh::CreateGrid(CRenderEngine *p_engine,D3DXVECTOR3 pos,float dx,float dz
 	CreateMeshFromData(engine);
 	ComputeBoundingBox();
 }
+
+
+// -----------------------------------------------
+// Loader especifico del formato .Y 
+bool CMeshDataLoader::LoadMesh(CMesh *p_mesh, char *filename)
+{
+	FILE *fp = fopen(filename,"rb");
+	if(fp==NULL)
+		return false;
+
+	int header[9];
+	// leo el header
+	fread(&header,sizeof(header),1,fp);
+	int version = header[6];
+
+	// Cantidad de layers
+	DWORD g_dwNumMaterials;
+	fread(&g_dwNumMaterials,sizeof(g_dwNumMaterials),1,fp);
+	p_mesh->cant_layers = g_dwNumMaterials;
+
+	for(DWORD i=0;i<g_dwNumMaterials;++i)
+	{
+		// nombre de la textura
+		char texture_name[256];
+		memset(texture_name,0,sizeof(texture_name));
+		fread(texture_name,sizeof(texture_name),1,fp);
+
+		// Material del layer
+		D3DMATERIAL9 g_pMeshMaterials;
+		fread(&g_pMeshMaterials,sizeof(D3DMATERIAL9),1,fp);
+
+		// Abmient y diffuse se usan tal cual (para ambient y diffuse respectivamente)
+		// Pero specular y emissive (que no tiene soporte fixed), estan hardcodeados para usar asi:
+		// Specular.R = luz specular pp dicha
+		// Specular.G, Specular.B -> no usados, se supone que estan en cero
+		// Emissive.r = Reflexion
+		// Emissive.g = Transparencia
+		// Emissive.b = no usado
+		// Emissive.b = no usado
+		// el solid usa esos campos para almacenar info de transparencia y reflexion no
+		// soportada en forma nativa por el D3DMATERIAL del Directx
+
+		MESH_LAYER *layer = &p_mesh->layers[i];
+		layer->Ambient = g_pMeshMaterials.Ambient;
+		layer->Diffuse = g_pMeshMaterials.Diffuse;
+		layer->ke = g_pMeshMaterials.Specular.b;
+		layer->kr = g_pMeshMaterials.Emissive.r;
+		layer->kt = g_pMeshMaterials.Emissive.g;
+		strcpy(layer->texture_name,texture_name);
+	}
+
+	// Cantidad de caras
+	fread(&p_mesh->cant_faces,sizeof(p_mesh->cant_faces),1,fp);
+	// Cantidad de vertices
+	fread(&p_mesh->cant_vertices,sizeof(p_mesh->cant_vertices),1,fp);
+	// Bytes por vertice (usualmente bps = 32 bytes)
+	fread(&p_mesh->bpv,sizeof(p_mesh->bpv),1,fp);
+	// Vertex buffer
+	p_mesh->pVertices = new MESH_VERTEX[p_mesh->cant_vertices];
+	fread(p_mesh->pVertices,p_mesh->bpv,p_mesh->cant_vertices,fp);
+	// Transformo de lepton format a dx format
+	for(DWORD i=0;i<p_mesh->cant_vertices;++i)
+	{
+		MESH_VERTEX *V = &p_mesh->pVertices[i];
+		float x = V->position.x;
+		float y = V->position.y;
+		float z = V->position.z;
+		V->position.x = y;
+		V->position.y = z;
+		V->position.z = x;
+
+		float nx = V->normal.x;
+		float ny = V->normal.y;
+		float nz = V->normal.z;
+		V->normal.x = ny;
+		V->normal.y = nz;
+		V->normal.z = nx;
+	}
+
+	p_mesh->cant_indices = p_mesh->cant_faces*3;
+	p_mesh->pIndices = new DWORD[p_mesh->cant_indices];
+	// Index buffer
+	fread(p_mesh->pIndices,p_mesh->cant_indices*sizeof(DWORD),1,fp);
+	// nro de layer por face (attributtes)
+	p_mesh->pAttributes = new DWORD[p_mesh->cant_faces];
+	fread(p_mesh->pAttributes,p_mesh->cant_faces*sizeof(DWORD),1,fp);
+	fclose(fp);
+
+	return true;
+}
+
 

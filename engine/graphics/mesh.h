@@ -86,4 +86,11 @@ public:
 };
 
 
+// Mesh Data Loader
+class CMeshDataLoader
+{
+public:
+	virtual bool LoadMesh(CMesh *p_mesh, char *filename);
+};
+
 
