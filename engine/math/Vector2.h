@@ -49,6 +49,7 @@ public:
 
 	float LengthSq() const;
 	float Length() const;
+	float mod() {return Length();};
 	float Normalize();
 	Vector2 normal();
     
