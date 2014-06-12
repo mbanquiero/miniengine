@@ -136,6 +136,7 @@ void ListarEjemplos()
 void RenderScene()
 {
 	ListarEjemplos();
+	_engine.TextOutA(30, 10, (char*)_current_example->getDescription());
 
 	_current_example->render(_engine.elapsed_time);
 }

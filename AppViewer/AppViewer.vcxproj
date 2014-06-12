@@ -88,6 +88,7 @@
     <ClInclude Include="AppViewer.h" />
     <ClInclude Include="Example.h" />
     <ClInclude Include="Example2.h" />
+    <ClInclude Include="Example3.h" />
     <ClInclude Include="ExampleTest.h" />
     <ClInclude Include="FpsCamera.h" />
     <ClInclude Include="InputManager.h" />
@@ -98,6 +99,7 @@
   <ItemGroup>
     <ClCompile Include="AppViewer.cpp" />
     <ClCompile Include="Example2.cpp" />
+    <ClCompile Include="Example3.cpp" />
     <ClCompile Include="ExampleTest.cpp" />
     <ClCompile Include="FpsCamera.cpp" />
     <ClCompile Include="InputManager.cpp" />

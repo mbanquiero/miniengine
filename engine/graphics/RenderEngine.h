@@ -147,7 +147,9 @@ public:
 	// Text
 	virtual void TextOut(int x,int y,char *string);
 
+	// Helpers
 	void SetupFullscreenQuad();
+
 
 private:
 	virtual CMesh *LoadMeshFromFile(char *fname);

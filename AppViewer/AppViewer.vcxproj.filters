@@ -51,6 +51,9 @@
     <ClInclude Include="FpsCamera.h">
       <Filter>Tools</Filter>
     </ClInclude>
+    <ClInclude Include="Example3.h">
+      <Filter>Examples</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -70,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="FpsCamera.cpp">
       <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Example3.cpp">
+      <Filter>Examples</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
