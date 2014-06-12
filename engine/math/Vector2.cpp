@@ -108,3 +108,26 @@ bool Vector2::operator!=( const Vector2& v2) const
 	return !((*this)== v2);
 }
 
+
+float Vector2::LengthSq() const
+{
+	return X*X + Y*Y;
+}
+
+float Vector2::Length() const
+{
+	return (float)sqrt(LengthSq());
+}
+
+float Vector2::Normalize()
+{
+	float len = Length();
+	(*this) /= len;
+	return len;
+}
+
+// retorna un vector normal a si mismo 
+Vector2 Vector2::normal()
+{
+	return(Vector2(-Y,X));
+}

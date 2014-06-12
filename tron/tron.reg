@@ -1,0 +1,16 @@
+REGEDIT
+; El programa SETUP puede utilizar este archivo .REG.
+;   Si no hay disponible ningún programa SETUP, las siguientes entradas se
+;   registrarán automáticamente en InitInstance con una llamada a
+;   CWinApp::RegisterShellFileTypes y COleObjectFactory::UpdateRegistryAll.
+
+
+HKEY_CLASSES_ROOT\tron.Document = tron.Document
+
+
+HKEY_CLASSES_ROOT\tron.Document\CLSID = {0C29F21C-B9DF-4DC1-A36A-C2E61D3B9BE0}
+
+HKEY_CLASSES_ROOT\CLSID\{0C29F21C-B9DF-4DC1-A36A-C2E61D3B9BE0} = tron.Document
+HKEY_CLASSES_ROOT\CLSID\{0C29F21C-B9DF-4DC1-A36A-C2E61D3B9BE0}\ProgId = tron.Document
+
+HKEY_CLASSES_ROOT\CLSID\{0C29F21C-B9DF-4DC1-A36A-C2E61D3B9BE0}\LocalServer32 = tron.EXE

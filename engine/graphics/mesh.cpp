@@ -61,6 +61,22 @@ void CMesh::Release()
 	SAFE_RELEASE(m_indexBuffer);
 }
 
+void CMesh::SetColor(D3DCOLOR color)
+{
+	BYTE r =  (BYTE) ((color>>16) & 0xFF);
+	BYTE g =  (BYTE) ((color>>8) & 0xFF);
+	BYTE b =  (BYTE) (color&0xFF);
+
+	for(int i=0;i<cant_layers;++i)
+	{
+		layers[i].Ambient.r = layers[i].Diffuse.r = (float)r/255.;
+		layers[i].Ambient.g = layers[i].Diffuse.g = (float)g/255.;
+		layers[i].Ambient.b = layers[i].Diffuse.b = (float)b/255.;
+		layers[i].Ambient.a = layers[i].Diffuse.a = 1.;
+	}
+}
+
+
 void CMesh::CalcularMatriz(D3DXVECTOR3 pos , D3DXVECTOR3 size , D3DXVECTOR3 rot, D3DXMATRIX *matWorld)
 {
 	D3DXMatrixIdentity(matWorld);
@@ -102,6 +118,53 @@ void CMesh::CalcularMatriz(D3DXVECTOR3 pos , D3DXVECTOR3 size , D3DXVECTOR3 rot,
 
 }
 
+
+
+// Ubica y rota con respecto al centro de gravedad. 
+void CMesh::CalcularMatriz(D3DXVECTOR3 Origen,D3DXVECTOR3 S,D3DXVECTOR3 Dir,D3DXMATRIXA16 *matWorld,D3DXVECTOR3 VUP)
+{
+
+	D3DXMatrixIdentity(matWorld);
+
+	// lo llevo al cero en el espacio del objeto pp dicho
+	// La traslacion T0 hace que el centro del objeto quede en el cero
+	// size = tamaño y P0 punto inicial, en coordenadas del objeto. 
+	D3DXMATRIXA16 T0;
+	D3DXMatrixTranslation(&T0,-m_pos.x-m_size.x/2,-m_pos.y-m_size.y/2,-m_pos.z-m_size.z/2);
+	D3DXMatrixMultiply(matWorld,matWorld,&T0);
+
+	// calculo la escala 
+	D3DXMATRIXA16 Es;
+	double kx = m_size.x && S.x?S.x/m_size.x:1;
+	double ky = m_size.y && S.y?S.y/m_size.y:1;
+	double kz = m_size.z && S.z?S.z/m_size.z:1;
+	D3DXMatrixScaling(&Es,kx,ky,kz);
+	D3DXMatrixMultiply(matWorld,matWorld,&Es);
+
+	// determino la orientacion
+	D3DXVECTOR3 U;
+	D3DXVec3Cross(&U,&VUP,&Dir);
+	D3DXVec3Normalize(&U,&U);
+
+	D3DXVECTOR3 V;
+	D3DXVec3Cross(&V,&Dir,&U);
+
+	D3DXMATRIXA16 Orientacion = 
+		D3DXMATRIXA16(	
+		U.x,		U.y,		U.z,		0,				
+		V.x,		V.y,		V.z,		0,				
+		Dir.x,		Dir.y,		Dir.z,		0,
+		0,			0,			0,			1
+		);
+	D3DXMatrixMultiply(matWorld,matWorld,&Orientacion);
+
+	// Lo traslado a la posicion final 
+	D3DXMATRIXA16 T;
+	D3DXMatrixTranslation(&T,Origen.x,Origen.y,Origen.z);
+	D3DXMatrixMultiply(matWorld,matWorld,&T);
+
+
+}
 
 
 // Carga internal data con los datos de un archivo Lepton .Y 

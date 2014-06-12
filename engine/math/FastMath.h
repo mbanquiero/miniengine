@@ -47,3 +47,10 @@ inline float saturate(float x)
 {
 	return clamp(x, 0.0f, 1.0f);
 }
+
+
+// retorna 1 si es positivo -1 si es negativo
+inline char sign(float n)
+{
+	return(n<0?-1:1);
+}

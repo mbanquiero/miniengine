@@ -46,6 +46,11 @@ public:
     bool operator == ( const Vector2& v2) const;
     bool operator != ( const Vector2& v2) const;
 
+
+	float LengthSq() const;
+	float Length() const;
+	float Normalize();
+	Vector2 normal();
     
     
 

@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include "Matrix.h"
+#include "Vector2.h"
 #include "Vector4.h"
 
 
@@ -45,6 +46,7 @@ public:
 	float LengthSq() const;
 	float Length() const;
 	float Normalize();
+	float mod() {return Length();};
 
 
 	// casting
@@ -71,6 +73,21 @@ public:
 	
 	bool operator == ( const Vector3& ) const;
 	bool operator != ( const Vector3& ) const;
+
+	// cross producto operator
+	Vector3 operator*(const Vector3 &);
+
+	// helpers para rotar
+	void rotar_xy(double an);
+	void rotar_xz(double an);
+	void rotar_zy(double an);
+	void rotar(Vector3 o,Vector3 eje,double an);
+	void rotar(Vector3 o,double an_x,double an_y,double an_z);
+	void rotar_inv(Vector3 o,double an_x,double an_y,double an_z);
+
+	// proyecciones 2d
+	Vector2 pxy(){return Vector2(X,Y);};
+	Vector2 pxz(){return Vector2(X,Z);};
 
 	operator D3DXVECTOR3*()const;
 	operator D3DXVECTOR3()const;

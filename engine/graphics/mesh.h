@@ -58,10 +58,13 @@ public:
 	virtual bool CreateMeshFromData(CRenderEngine *p_engine);		// Crea el mesh pp dicho desde los datos internos
 	virtual void ReleaseInternalData();		// Libera los datos internos, una vez que los Buffers del device estan creados no tiene sentido mantenar esos datos del mesh
 	virtual void Release();
+	virtual void SetColor(D3DCOLOR color);
 
 	// calculos
 	virtual bool ComputeBoundingBox();
 	virtual void CalcularMatriz(D3DXVECTOR3 pos , D3DXVECTOR3 size , D3DXVECTOR3 rot, D3DXMATRIX *matWorld);
+	virtual void CalcularMatriz(D3DXVECTOR3 Origen,D3DXVECTOR3 S,D3DXVECTOR3  Dir,D3DXMATRIXA16 *matWorld,D3DXVECTOR3 VUP);
+
 	virtual D3DXVECTOR3 pos_vertice(int i) { return pVertices!=NULL ? pVertices[i].position : D3DXVECTOR3(0,0,0);};			// Abstraccion de las posiciones
 	virtual bool hay_internal_data() { return pVertices!=NULL ? true : false;};
 

@@ -1,0 +1,29 @@
+// tron.idl: código fuente de la biblioteca de tipos para el archivo tron.exe
+
+// El compilador MIDL procesará este archivo para generar
+// la biblioteca de tipos (tron.tlb).
+
+[ uuid(2FAAB5C2-195B-4CFD-AD8D-73A4D1779D0B), version(1.0) ]
+library tron
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  Interfaz de envío principal para CtronDoc
+	
+	[ uuid(52C17E91-C83C-4876-8033-A47BB37EB8E1) ]
+	dispinterface Itron
+	{
+		properties:
+			
+		methods:
+	};
+
+	//  Información de clase para CtronDoc
+	
+	[ uuid(0C29F21C-B9DF-4DC1-A36A-C2E61D3B9BE0) ]
+	coclass CtronDoc
+	{
+		[default] dispinterface Itron;
+	};
+};
