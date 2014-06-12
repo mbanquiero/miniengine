@@ -118,6 +118,10 @@
       <Project>{21fd0c08-6e61-4d0a-a97a-9a698386067b}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\..\Program Files (x86)\Microsoft Visual Studio 11.0\VC\lib\msvcrtd.lib" />
+    <Library Include="..\..\..\Program Files (x86)\Microsoft Visual Studio 11.0\VC\lib\oldnames.lib" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

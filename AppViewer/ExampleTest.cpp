@@ -65,12 +65,12 @@ void CompactMeshes()
 
 		for (int j = 0; j < t->cant_faces; j++)
 		{
-			m->pAttributes[m->cant_faces + j] = t->layers[t->pAttributes[j]].nro_textura;
+			m->pAttributes[m->cant_faces + j] = t->layers[t->pAttributes[j]].nro_material;
 		}
 
 		for (int j = 0; j < t->cant_layers; j++)
 		{
-			m->layers[t->layers[j].nro_textura] = t->layers[j];
+			m->layers[t->layers[j].nro_material] = t->layers[j];
 		}
 
 		m->cant_vertices += t->cant_vertices;

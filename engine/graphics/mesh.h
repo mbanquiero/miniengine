@@ -5,18 +5,19 @@
 
 class CRenderEngine;
 
+
 typedef struct MESH_LAYER {
 	D3DCOLORVALUE Diffuse;
 	D3DCOLORVALUE Ambient;
 	float ke;					// coef. luz especular
 	float kt;					// transparencia
 	float kr;					// reflexion	
-	int nro_textura;			// Nro de textura en el pool (Diffusemap)
-	int nro_normal_map;			// Nro de textura en el pool (NormalHeightMap)
+	int nro_material;			// Nro de textura en el pool (Diffusemap)
+	int nro_normal_map;			// NO USADO: Nro de textura en el pool (NormalHeightMap)
 	int start_index;
 	int cant_indices;
-	char texture_name[MAX_PATH];					// diffuse map
-	char normal_heightmap_name[MAX_PATH];			// NormalHeightMap
+	char material_name[MAX_PATH];					// diffuse map
+	char normal_heightmap_name[MAX_PATH];			// NO USADO NormalHeightMap
 } MESH_LAYER;
 
 #define MAX_MESH_LAYERS			200 //32

@@ -443,9 +443,9 @@ void CSkeletalMesh::DrawSubset(int i)
 	ID3DXEffect *g_pEffect = engine->g_pEffect;
 	// Hay que setear el material 
 	// Set shader texture resource in the pixel shader.
-	if(layers[i].nro_textura>=0 && layers[i].nro_textura<engine->cant_texturas)
+	if(layers[i].nro_material>=0 && layers[i].nro_material<engine->cant_texturas)
 	{
-		g_pEffect->SetTexture("g_Texture", engine->m_texture[layers[i].nro_textura]->g_pTexture);
+		g_pEffect->SetTexture("g_Texture", engine->m_texture[layers[i].nro_material]->g_pTexture);
 	}
 
 	// por fin dibujo el subset pp dicho
@@ -468,7 +468,10 @@ bool CSkeletalMesh::CreateMeshFromData(CRenderEngine *p_engine)
 	for(int i=0;i<cant_layers;++i)
 	{
 		// Cargo la textura en el pool (o obtengo el nro de textura si es que ya estaba)
-		layers[i].nro_textura = p_engine->LoadTexture(layers[i].texture_name);
+		//layers[i].nro_material = p_engine->LoadTexture(layers[i].material_name);
+		// Cargo el material (tiene que estar generado desde el material compiler)
+		layers[i].nro_material = p_engine->LoadMaterial(layers[i].material_name);
+
 	}
 
 	// create the vertex buffer

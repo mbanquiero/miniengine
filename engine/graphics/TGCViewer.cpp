@@ -173,7 +173,7 @@ char CTGCMeshParser::ParseXMLLine(char *buffer)
 				{
 					// Cargo la textura en el pool (o obtengo el nro de textura si es que ya estaba)
 					//layers[xml_current_layer].nro_textura = engine->LoadTexture(texture_name);
-					strcpy(M->layers[xml_current_layer].texture_name , texture_name);
+					strcpy(M->layers[xml_current_layer].material_name , texture_name);
 				}
 			}
 		}

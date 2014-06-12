@@ -15,6 +15,9 @@ CMesh::CMesh()
 	bpv = sizeof(MESH_VERTEX);					// valor por defecto del stride para mesh comunes
 	cant_layers = 0;
 	memset(layers,0,sizeof(layers));
+	cant_indices = 0;
+	cant_vertices = 0;
+	cant_faces = 0;
 	pVertices = NULL;
 	pIndices = NULL;
 	// dx9
@@ -112,6 +115,7 @@ bool CMesh::LoadDataFromFile(char *filename)
 
 	// Aprovecho para computar el tamaño y la posicion del mesh
 	ComputeBoundingBox();
+
 	return true;
 }
 
@@ -200,7 +204,9 @@ bool CMesh::CreateMeshFromData(CRenderEngine *p_engine)
 	for(int i=0;i<cant_layers;++i)
 	{
 		// Cargo la textura en el pool (o obtengo el nro de textura si es que ya estaba)
-		layers[i].nro_textura = p_engine->LoadTexture(layers[i].texture_name);
+		//layers[i].nro_material = p_engine->LoadTexture(layers[i].material_name);
+		// Cargo el material (tiene que estar generado desde el material compiler)
+		layers[i].nro_material = p_engine->LoadMaterial(layers[i].material_name);
 	}
 	
 	LPDIRECT3DDEVICE9 g_pd3dDevice = p_engine->g_pd3dDevice;
@@ -287,11 +293,7 @@ void CMesh::Draw()
 	// Seteo el vertex declaration
 	SetVertexDeclaration();
 	// Seteo los shaders (effect tecnica)
-#ifdef DEFERRED_RENDER
 	engine->g_pEffect->SetTechnique("RenderGBuffer");
-#else
-	engine->g_pEffect->SetTechnique("RenderScene");
-#endif
 
 	// dibujo cada subset
 	for(int i=0;i<cant_layers;++i)
@@ -302,11 +304,13 @@ void CMesh::DrawSubset(int i)
 {
 	LPDIRECT3DDEVICE9 g_pd3dDevice = engine->g_pd3dDevice;
 	ID3DXEffect *g_pEffect = engine->g_pEffect;
-	// Hay que setear el material 
-	// Set shader texture resource in the pixel shader.
-	if(layers[i].nro_textura>=0 && layers[i].nro_textura<engine->cant_texturas)
+
+	// Cada layer esta asociado a un material resource del engine 
+	// el material a su vez esta asociado a un "material shader" y a un conjunto de texturas y parametros
+	if(layers[i].nro_material>=0 && layers[i].nro_material<engine->cant_texturas)
 	{
-		g_pEffect->SetTexture("g_Texture", engine->m_texture[layers[i].nro_textura]->g_pTexture);
+		engine->SetMaterial(layers[i].nro_material);
+		//g_pEffect->SetTexture("g_Texture", engine->m_texture[layers[i].nro_material]->g_pTexture);
 	}
 
 	// por fin dibujo el subset pp dicho
@@ -407,7 +411,7 @@ void CMesh::CreateGrid(CRenderEngine *p_engine,D3DXVECTOR3 pos,float dx,float dz
 	pAttributes = new DWORD[cant_faces];
 	memset(pAttributes,0,sizeof(DWORD)*cant_faces);
 	// diffuse map
-	strcpy(layers[0].texture_name , texture_name);
+	strcpy(layers[0].material_name , texture_name);
 	// normal height map
 	strcpy(layers[0].normal_heightmap_name, normal_map_name);
 	// atributos del material
@@ -471,7 +475,7 @@ bool CMeshDataLoader::LoadMesh(CMesh *p_mesh, char *filename)
 		layer->ke = g_pMeshMaterials.Specular.b;
 		layer->kr = g_pMeshMaterials.Emissive.r;
 		layer->kt = g_pMeshMaterials.Emissive.g;
-		strcpy(layer->texture_name,texture_name);
+		strcpy(layer->material_name,texture_name);
 	}
 
 	// Cantidad de caras

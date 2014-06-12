@@ -24,12 +24,17 @@ CRenderEngine::CRenderEngine()
 	g_pFullScreenRenderTargetSurf = NULL;
 	// propias
 	cant_texturas = 0;
+	cant_materiales = 0;
 	cant_mesh = 0;
 	total_time = 0;
 	elapsed_time = 0;
 	ftime = 0;
-
+	lighting_enabled = true;
 	m_mesh = new CMesh *[MAX_MESH];
+
+	show_fps = true;		
+	show_camera = true;		
+
 }
 
 CRenderEngine::~CRenderEngine()
@@ -240,12 +245,19 @@ void CRenderEngine::InitPipeline()
 
 }
 
+void CRenderEngine::ReleaseResources()
+{
+	// libera los recursos propios
+	ReleaseTextures();
+	ReleaseMaterials();
+	ReleaseMeshes();
+}
+
 
 void CRenderEngine::Release()
 {
 	// libera los recursos propios
-	ReleaseTextures();
-	ReleaseMeshes();
+	ReleaseResources();
 
 	// libera los recursos del dx
 	if(g_pD3D==NULL)
@@ -271,6 +283,17 @@ void CRenderEngine::Release()
 	SAFE_RELEASE(g_pd3dDevice);
 	SAFE_RELEASE(g_pD3D);
 
+}
+
+
+void CRenderEngine::ReleaseMaterials()
+{
+	for(int i=0;i<cant_materiales;++i)
+	{
+		delete m_material[i];
+		m_material[i] = NULL;
+	}
+	cant_materiales = 0;
 }
 
 void CRenderEngine::ReleaseTextures()
@@ -320,9 +343,20 @@ void CRenderEngine::RenderFrame(void (*lpfnRender)())
 		ftime = 0;
 		cant_frames = 0;
 	}
+
+	int pos_y = 10;
 	char buffer[255];
-	sprintf(buffer,"FPS: %.1f",fps);
-	TextOut(10,10,buffer);
+	if(show_fps)
+	{
+		sprintf(buffer,"FPS: %.1f",fps);
+		TextOut(10,pos_y+=10,buffer);
+	}
+	if(show_camera)
+	{
+		sprintf(buffer,"Look From: [%.2f,%.2f,%.2f]     Look At: [%.2f,%.2f,%.2f]  ",lookFrom.x,lookFrom.y,lookFrom.z,lookAt.x,lookAt.y,lookAt.z);
+		TextOut(10,pos_y+=10,buffer);
+	}
+
 
 	// Presento
 	g_pd3dDevice->Present( NULL, NULL, NULL, NULL );
@@ -422,7 +456,7 @@ void CRenderEngine::RenderLigthPass()
 {
 	g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(240,240,240), 1, 0 );
 	SetZEnabled(false);
-	g_pEffect->SetTechnique("PhongLighting");
+	g_pEffect->SetTechnique(lighting_enabled ? "PhongLighting" : "RenderColorBuffer");
 	// seteo el G-buffer
 	g_pEffect->SetTexture( "g_txColorBuffer", g_pColorTexture);
 	g_pEffect->SetTexture( "g_txPositionBuffer", g_pPositionTexture);
@@ -451,7 +485,44 @@ void CRenderEngine::RenderFullScreenQuad()
 	g_pd3dDevice->EndScene() ;
 }
 
+int CRenderEngine::LoadMaterial(char *filename)
+{
+	// primero busco si el material ya esta cargado
+	int rta = -1;
+	for(int i=0;i<cant_materiales&& rta==-1;++i)
+		if(strcmp(filename,m_material[i]->name)==0)
+			rta = i;
 
+	if(rta!=-1)
+		return rta;			// La textura ya estaba cargada en el pool, devuelve el nro de textura 
+
+
+	// Cargo el material pp dicho
+	// La textura principal con el mismo nombre que el material
+	MATERIAL *p_material = m_material[cant_materiales] = new MATERIAL;
+	memset(p_material, 0 , sizeof(MATERIAL));		//TODO ojo con el vtable, si lo pasan a class con algun virtual sacar esta linea
+	strcpy(p_material->name , filename);
+	p_material->cant_texturas = 1;
+	strcpy(p_material->texture_name[0], filename);
+	p_material->nro_textura[0] = LoadTexture(filename);
+	//TODO: cargar el resto de las texturas y los parametros del shader
+	p_material->cant_param = 0;
+	return cant_materiales++;
+}
+
+
+void CRenderEngine::SetMaterial(int n)
+{
+	// setea las texturas asociadas al "shader material", sus parametros y deja puesto la technique que implementa el material
+	MATERIAL *p_material = m_material[n];
+	// textura principal
+	g_pEffect->SetTexture("g_Texture" , m_texture[p_material->nro_textura[0]]->g_pTexture);
+	// TODO el resto de las texutas
+	// TODO SetValue de los parametros
+	// TODO compilador de shaders
+	//g_pEffect->SetTechnique(p_material->name);
+
+}
 
 int CRenderEngine::LoadTexture(char *filename)
 {
@@ -607,9 +678,9 @@ bool CRenderEngine::LoadSceneFromFlat(char *filename)
 		{
 			//La textura se guarda de forma relativa la transformo en absoluta
 			//TODO: agregar validacion
-			sprintf(aux_path, "%s%s", cur_dir, m->layers[j].texture_name);
+			sprintf(aux_path, "%s%s", cur_dir, m->layers[j].material_name);
 			for (char * p = aux_path; *p; p++) if (*p == '\\') *p = '/';
-			strcpy(m->layers[j].texture_name, aux_path);
+			strcpy(m->layers[j].material_name, aux_path);
 		}
 
 		m->engine = this;
@@ -658,9 +729,9 @@ bool CRenderEngine::SaveSceneToFlat(char *filename)
 		{
 			//saco el principio del path de la textura para transformarla en relativa, OJO solo funciona
 			//para path relativos al cur_dir, TODO: agregar validacion
-			strcpy(aux_path, m->layers[j].texture_name);
-			ZeroMemory(m->layers[j].texture_name, sizeof(m->layers[j].texture_name)); //hago un zeromemory para que no vaya basura en el archivo
-			strcpy(m->layers[j].texture_name, aux_path + cur_dir_len);
+			strcpy(aux_path, m->layers[j].material_name);
+			ZeroMemory(m->layers[j].material_name, sizeof(m->layers[j].material_name)); //hago un zeromemory para que no vaya basura en el archivo
+			strcpy(m->layers[j].material_name, aux_path + cur_dir_len);
 		}
 
 		//todo lo que es fijo ya esta escrito con el fwrite anterior
@@ -673,7 +744,7 @@ bool CRenderEngine::SaveSceneToFlat(char *filename)
 		for (int j = 0; j < m->cant_layers; j++)
 		{
 			//restauro el path de las texturas ojo solo funciona si el nombre de la textura es mas largo que el cur_dir
-			strcpy(m->layers[j].texture_name, aux_path);
+			strcpy(m->layers[j].material_name, aux_path);
 		}
 
 	}

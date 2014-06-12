@@ -8,6 +8,7 @@
 #define SAFE_RELEASE(p) { if ( (p) ) { (p)->Release(); (p) = 0; } }
 #define SAFE_DELETE(p) { if ( (p) ) { delete (p); (p) = 0; } }
 
+#define MAX_MATERIAL	3000
 #define MAX_TEXTURAS	3000
 #define MAX_MESH		10000
 
@@ -75,6 +76,11 @@ public:
 	int cant_texturas;
 	CTexture *m_texture[MAX_TEXTURAS];
 
+	// Pool de Materiales
+	int cant_materiales;
+	MATERIAL *m_material[MAX_MATERIAL];
+
+
 	// Pool de meshes
 	int cant_mesh;
 	CMesh **m_mesh;
@@ -85,6 +91,13 @@ public:
 	int cant_frames;		// frame count
 	float ftime;			// frame time
 	float fps;				
+
+	// lighting stage flags
+	bool lighting_enabled;			// si esta en off dibuja directamente el color buffer
+
+	// info flags
+	bool show_fps;		
+	bool show_camera;		
 
 
 	CRenderEngine();
@@ -104,10 +117,14 @@ public:
 	void RenderLigthPass();
 	void RenderFullScreenQuad();
 
+	int LoadMaterial(char *filename);
+	void ReleaseMaterials();
+	void SetMaterial(int n);
 	int LoadTexture(char *filename);
 	void ReleaseTextures();
 	int LoadMesh(char *filename);
 	void ReleaseMeshes();
+	void ReleaseResources();			// libera los recursos PROPIOS (texturas, mesh y materiales)
 
 	// Soporte de archivos xml
 	bool LoadSceneFromXml(char *filename);

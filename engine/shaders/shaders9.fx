@@ -439,3 +439,18 @@ technique PhongLighting
 		PixelShader = compile ps_3_0 PhongLightingPS();
 	}
 }
+
+// Dibuja el color buffer directamente
+float4 RenderColorBufferPS(float2 TextureUV  : TEXCOORD0) : COLOR0
+{
+	return float4(tex2D(g_ColorBuffer, TextureUV).xyz,1);
+}
+
+
+technique RenderColorBuffer
+{
+	pass P0
+	{        
+		PixelShader = compile ps_3_0 RenderColorBufferPS();
+	}
+}

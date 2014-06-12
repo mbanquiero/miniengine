@@ -435,8 +435,7 @@ void CSolidView::OnCargarTgcmesh()
 
 	if (GetOpenFileName( &ofn ))
 	{
-		escena.ReleaseTextures();
-		escena.ReleaseMeshes();
+		escena.ReleaseResources();
 		CString fname(ofn.lpstrFile);
 		fname.Replace('\\','/');
 		p_robot = NULL;
